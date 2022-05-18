@@ -230,6 +230,9 @@ func (resourceController *ResourceControllerV2) ListResourceInstancesWithContext
 	if listResourceInstancesOptions.UpdatedTo != nil {
 		builder.AddQuery("updated_to", fmt.Sprint(*listResourceInstancesOptions.UpdatedTo))
 	}
+	if listResourceInstancesOptions.AccountID != nil {
+		builder.AddQuery("account_id", fmt.Sprint(*listResourceInstancesOptions.AccountID))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -3136,6 +3139,8 @@ type ListResourceInstancesOptions struct {
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
+
+	AccountID *string
 }
 
 // Constants associated with the ListResourceInstancesOptions.State property.
@@ -3230,6 +3235,12 @@ func (_options *ListResourceInstancesOptions) SetUpdatedTo(updatedTo string) *Li
 // SetHeaders : Allow user to set Headers
 func (options *ListResourceInstancesOptions) SetHeaders(param map[string]string) *ListResourceInstancesOptions {
 	options.Headers = param
+	return options
+}
+
+// SetAccount : Allow user to set Account
+func (options *ListResourceInstancesOptions) SetAccountID(account string) *ListResourceInstancesOptions {
+	options.AccountID = core.StringPtr(account)
 	return options
 }
 
