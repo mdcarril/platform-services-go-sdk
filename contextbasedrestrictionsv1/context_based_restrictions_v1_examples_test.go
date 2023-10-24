@@ -1,8 +1,7 @@
-//go:build examples
 // +build examples
 
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,44 +39,48 @@ import (
 // CONTEXT_BASED_RESTRICTIONS_AUTH_URL=<IAM token service base URL - omit this if using the production environment>
 // CONTEXT_BASED_RESTRICTIONS_TEST_ACCOUNT_ID=<the id of the account under which test CBR zones and rules are created>
 // CONTEXT_BASED_RESTRICTIONS_TEST_SERVICE_NAME=<the name of the service to be associated with the test CBR rules>
+// CONTEXT_BASED_RESTRICTIONS_TEST_VPC_CRN=<the CRN of the vpc instance to be associated with the test CBR rules>
 //
 // These configuration properties can be exported as environment variables, or stored
 // in a configuration file and then:
 // export IBM_CREDENTIALS_FILE=<name of configuration file>
 //
-const externalConfigFile = "../context_based_restrictions_v1.env"
+var _ = Describe(`ContextBasedRestrictionsV1 Examples Tests`, func() {
 
-var (
-	contextBasedRestrictionsService *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
-	config                          map[string]string
-	configLoaded                    bool = false
-	accountID                       string
-	serviceName                     string
-	zoneID                          string
-	zoneRev                         string
-	ruleID                          string
-	ruleRev                         string
-)
+	const externalConfigFile = "../context_based_restrictions_v1.env"
 
-func shouldSkipTest() {
-	if !configLoaded {
-		Skip("External configuration is not available, skipping tests...")
+	var (
+		contextBasedRestrictionsService *contextbasedrestrictionsv1.ContextBasedRestrictionsV1
+		config                          map[string]string
+		configLoaded                    bool = false
+		accountID                       string
+		serviceName                     string
+		vpcCRN                          string
+		zoneID                          string
+		zoneRev                         string
+		ruleID                          string
+		ruleRev                         string
+	)
+
+	var shouldSkipTest = func() {
+		if !configLoaded {
+			Skip("External configuration is not available, skipping examples...")
+		}
+
 	}
-}
 
-var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples Tests`, func() {
 	Describe(`External configuration`, func() {
 		It("Successfully load the configuration", func() {
 			var err error
 			_, err = os.Stat(externalConfigFile)
 			if err != nil {
-				Skip("External configuration file not found, skipping tests: " + err.Error())
+				Skip("External configuration file not found, skipping examples: " + err.Error())
 			}
 
 			os.Setenv("IBM_CREDENTIALS_FILE", externalConfigFile)
 			config, err = core.GetServiceProperties(contextbasedrestrictionsv1.DefaultServiceName)
 			if err != nil {
-				Skip("Error loading service properties, skipping tests: " + err.Error())
+				Skip("Error loading service properties, skipping examples: " + err.Error())
 			}
 
 			accountID = config["TEST_ACCOUNT_ID"]
@@ -88,6 +91,15 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 			serviceName = config["TEST_SERVICE_NAME"]
 			if serviceName == "" {
 				Skip("Unable to load TEST_SERVICE_NAME configuration property, skipping tests")
+			}
+
+			vpcCRN = config["TEST_VPC_CRN"]
+			if vpcCRN == "" {
+				Skip("Unable to load TEST_VPC_CRN configuration property, skipping tests")
+			}
+
+			if len(config) == 0 {
+				Skip("Unable to load service properties, skipping examples")
 			}
 
 			configLoaded = len(config) > 0
@@ -103,7 +115,7 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 
 			// begin-common
 
-			contextBasedRestrictionsServiceOptions := &contextbasedrestrictionsv1.Options{}
+			contextBasedRestrictionsServiceOptions := &contextbasedrestrictionsv1.ContextBasedRestrictionsV1Options{}
 
 			contextBasedRestrictionsService, err = contextbasedrestrictionsv1.NewContextBasedRestrictionsV1UsingExternalConfig(contextBasedRestrictionsServiceOptions)
 
@@ -117,7 +129,7 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 		})
 	})
 
-	Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 request examples`, func() {
+	Describe(`ContextBasedRestrictionsV1 request examples`, func() {
 		BeforeEach(func() {
 			shouldSkipTest()
 		})
@@ -125,16 +137,40 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 			fmt.Println("\nCreateZone() result:")
 			// begin-create_zone
 
-			addressModel := &contextbasedrestrictionsv1.AddressIPAddress{
+			ipAddressModel := &contextbasedrestrictionsv1.AddressIPAddress{
 				Type:  core.StringPtr("ipAddress"),
 				Value: core.StringPtr("169.23.56.234"),
 			}
+			ipRangeAddressModel := &contextbasedrestrictionsv1.AddressIPAddressRange{
+				Type:  core.StringPtr("ipRange"),
+				Value: core.StringPtr("169.23.22.0-169.23.22.255"),
+			}
+			subnetAddressModel := &contextbasedrestrictionsv1.AddressSubnet{
+				Type:  core.StringPtr("subnet"),
+				Value: core.StringPtr("192.0.2.0/24"),
+			}
+			vpcAddressModel := &contextbasedrestrictionsv1.AddressVPC{
+				Type:  core.StringPtr("vpc"),
+				Value: core.StringPtr(vpcCRN),
+			}
+			serviceRefAddressModel := &contextbasedrestrictionsv1.AddressServiceRef{
+				Type: core.StringPtr("serviceRef"),
+				Ref: &contextbasedrestrictionsv1.ServiceRefValue{
+					AccountID:   core.StringPtr(accountID),
+					ServiceName: core.StringPtr("cloud-object-storage"),
+				},
+			}
+			excludedIPAddressModel := &contextbasedrestrictionsv1.AddressIPAddress{
+				Type:  core.StringPtr("ipAddress"),
+				Value: core.StringPtr("169.23.22.127"),
+			}
 
 			createZoneOptions := contextBasedRestrictionsService.NewCreateZoneOptions()
-			createZoneOptions.SetName("SDK TEST - an example of zone")
+			createZoneOptions.SetName("an example of zone")
 			createZoneOptions.SetAccountID(accountID)
-			createZoneOptions.SetDescription("SDK TEST - this is an example of zone")
-			createZoneOptions.SetAddresses([]contextbasedrestrictionsv1.AddressIntf{addressModel})
+			createZoneOptions.SetDescription("this is an example of zone")
+			createZoneOptions.SetAddresses([]contextbasedrestrictionsv1.AddressIntf{ipAddressModel, ipRangeAddressModel, subnetAddressModel, vpcAddressModel, serviceRefAddressModel})
+			createZoneOptions.SetExcluded([]contextbasedrestrictionsv1.AddressIntf{excludedIPAddressModel})
 
 			zone, response, err := contextBasedRestrictionsService.CreateZone(createZoneOptions)
 			if err != nil {
@@ -209,9 +245,9 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 				zoneID,
 				zoneRev,
 			)
-			replaceZoneOptions.SetName("SDK TEST - an example of updated zone")
+			replaceZoneOptions.SetName("an example of updated zone")
 			replaceZoneOptions.SetAccountID(accountID)
-			replaceZoneOptions.SetDescription("SDK TEST - this is an example of updated zone")
+			replaceZoneOptions.SetDescription("this is an example of updated zone")
 			replaceZoneOptions.SetAddresses([]contextbasedrestrictionsv1.AddressIntf{addressModel})
 
 			zone, response, err := contextBasedRestrictionsService.ReplaceZone(replaceZoneOptions)
@@ -281,10 +317,10 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 			}
 
 			createRuleOptions := contextBasedRestrictionsService.NewCreateRuleOptions()
-			createRuleOptions.SetDescription("SDK TEST - this is an example of rule")
+			createRuleOptions.SetDescription("this is an example of rule")
 			createRuleOptions.SetContexts([]contextbasedrestrictionsv1.RuleContext{*ruleContextModel})
 			createRuleOptions.SetResources([]contextbasedrestrictionsv1.Resource{*resourceModel})
-
+			createRuleOptions.SetEnforcementMode(contextbasedrestrictionsv1.CreateRuleOptionsEnforcementModeEnabledConst)
 			rule, response, err := contextBasedRestrictionsService.CreateRule(createRuleOptions)
 			if err != nil {
 				panic(err)
@@ -379,9 +415,10 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 				ruleID,
 				ruleRev,
 			)
-			replaceRuleOptions.SetDescription("SDK TEST - this is an example of updated rule")
+			replaceRuleOptions.SetDescription("this is an example of rule")
 			replaceRuleOptions.SetContexts([]contextbasedrestrictionsv1.RuleContext{*ruleContextModel})
 			replaceRuleOptions.SetResources([]contextbasedrestrictionsv1.Resource{*resourceModel})
+			replaceRuleOptions.SetEnforcementMode(contextbasedrestrictionsv1.ReplaceRuleOptionsEnforcementModeDisabledConst)
 
 			rule, response, err := contextBasedRestrictionsService.ReplaceRule(replaceRuleOptions)
 			if err != nil {
@@ -419,6 +456,28 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 			Expect(accountSettings).ToNot(BeNil())
 
 		})
+
+		It(`ListAvailableServiceOperations request example`, func() {
+			fmt.Println("\nListAvailableServiceOperations() result:")
+			// begin-list_available_service_operations
+
+			listAvailableServiceOperationsOptions := contextBasedRestrictionsService.NewListAvailableServiceOperationsOptions()
+			listAvailableServiceOperationsOptions.SetServiceName("containers-kubernetes")
+
+			operationsList, response, err := contextBasedRestrictionsService.ListAvailableServiceOperations(listAvailableServiceOperationsOptions)
+			if err != nil {
+				panic(err)
+			}
+			b, _ := json.MarshalIndent(operationsList, "", "  ")
+			fmt.Println(string(b))
+
+			// end-list_available_service_operations
+
+			Expect(err).To(BeNil())
+			Expect(response.StatusCode).To(Equal(200))
+			Expect(operationsList).ToNot(BeNil())
+		})
+
 		It(`DeleteRule request example`, func() {
 			// begin-delete_rule
 
@@ -429,6 +488,9 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 			response, err := contextBasedRestrictionsService.DeleteRule(deleteRuleOptions)
 			if err != nil {
 				panic(err)
+			}
+			if response.StatusCode != 204 {
+				fmt.Printf("\nUnexpected response status code received from DeleteRule(): %d\n", response.StatusCode)
 			}
 
 			// end-delete_rule
@@ -449,13 +511,15 @@ var _ = Describe(`contextbasedrestrictionsv1.ContextBasedRestrictionsV1 Examples
 			if err != nil {
 				panic(err)
 			}
+			if response.StatusCode != 204 {
+				fmt.Printf("\nUnexpected response status code received from DeleteZone(): %d\n", response.StatusCode)
+			}
 
 			// end-delete_zone
 			fmt.Printf("\nDeleteZone() response status code: %d\n", response.StatusCode)
 
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(204))
-
 		})
 	})
 })

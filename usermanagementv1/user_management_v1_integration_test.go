@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 /**
@@ -20,16 +21,14 @@ package usermanagementv1_test
 
 import (
 	"fmt"
-	"log"
-	"net/url"
-	"os"
-	"time"
-
 	"github.com/IBM/go-sdk-core/v5/core"
 	common "github.com/IBM/platform-services-go-sdk/common"
 	"github.com/IBM/platform-services-go-sdk/usermanagementv1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"log"
+	"os"
+	"time"
 )
 
 /**
@@ -159,10 +158,9 @@ var _ = Describe(`UserManagementV1 Integration Tests`, func() {
 		It(`UpdateUserSettings(updateUserSettingsOptions *UpdateUserSettingsOptions)`, func() {
 
 			updateUserSettingsOptions := &usermanagementv1.UpdateUserSettingsOptions{
-				AccountID:          &accountID,
-				IamID:              &userID,
-				AllowedIPAddresses: core.StringPtr("32.96.110.50,172.16.254.1"),
-				SelfManage:         core.BoolPtr(true),
+				AccountID:  &accountID,
+				IamID:      &userID,
+				SelfManage: core.BoolPtr(true),
 			}
 
 			response, err := userManagementService.UpdateUserSettings(updateUserSettingsOptions)
@@ -193,18 +191,107 @@ var _ = Describe(`UserManagementV1 Integration Tests`, func() {
 				Expect(result).ToNot(BeNil())
 				// fmt.Fprintf(GinkgoWriter, "ListUsers() result:\n%s\n", common.ToJSON(result))
 
-				for _, userProfile := range result.Resources {
-					results = append(results, userProfile)
-				}
+				results = append(results, result.Resources...)
 
 				if result.NextURL != nil {
-					pageStart = getStartTokenFromURL(result.NextURL)
+					pageStart, err = core.GetQueryParam(result.NextURL, "_start")
+					Expect(err).To(BeNil())
 				} else {
 					moreResults = false
 				}
 			}
 
 			fmt.Fprintf(GinkgoWriter, "Received a total of %d user profiles.\n", len(results))
+		})
+		It(`ListUsers(listUsersOptions *ListUsersOptions) using search`, func() {
+
+			results := []usermanagementv1.UserProfile{}
+			var moreResults bool = true
+			var pageStart *string = nil
+			for moreResults {
+				listUsersOptions := &usermanagementv1.ListUsersOptions{
+					AccountID: &accountID,
+					Search:    core.StringPtr("state:ACTIVE"),
+					Start:     pageStart,
+				}
+				result, response, err := userManagementService.ListUsers(listUsersOptions)
+				Expect(err).To(BeNil())
+				Expect(response.StatusCode).To(Equal(200))
+				Expect(result).ToNot(BeNil())
+				// fmt.Fprintf(GinkgoWriter, "ListUsers() result:\n%s\n", common.ToJSON(result))
+
+				results = append(results, result.Resources...)
+
+				if result.NextURL != nil {
+					pageStart, err = core.GetQueryParam(result.NextURL, "_start")
+					Expect(err).To(BeNil())
+				} else {
+					moreResults = false
+				}
+			}
+
+			fmt.Fprintf(GinkgoWriter, "Received a total of %d user profiles.\n", len(results))
+		})
+		It(`ListUsers(listUsersOptions *ListUsersOptions) using include_settings`, func() {
+
+			results := []usermanagementv1.UserProfile{}
+			var moreResults bool = true
+			var pageStart *string = nil
+
+			for moreResults {
+				listUsersOptions := &usermanagementv1.ListUsersOptions{
+					AccountID:       &accountID,
+					IncludeSettings: core.BoolPtr(true),
+					Limit:           core.Int64Ptr(10),
+					Start:           pageStart,
+				}
+				result, response, err := userManagementService.ListUsers(listUsersOptions)
+				Expect(err).To(BeNil())
+				Expect(response.StatusCode).To(Equal(200))
+				Expect(result).ToNot(BeNil())
+				// fmt.Fprintf(GinkgoWriter, "ListUsers() result:\n%s\n", common.ToJSON(result))
+
+				results = append(results, result.Resources...)
+
+				if result.NextURL != nil {
+					pageStart, err = core.GetQueryParam(result.NextURL, "_start")
+					Expect(err).To(BeNil())
+				} else {
+					moreResults = false
+				}
+			}
+
+			fmt.Fprintf(GinkgoWriter, "Received a total of %d user profiles.\n", len(results))
+		})
+		It(`ListUsers(listUsersOptions *ListUsersOptions) using UsersPager`, func() {
+			listUsersOptions := &usermanagementv1.ListUsersOptions{
+				AccountID: &accountID,
+			}
+
+			// Test GetNext().
+			pager, err := userManagementService.NewUsersPager(listUsersOptions)
+			Expect(err).To(BeNil())
+			Expect(pager).ToNot(BeNil())
+
+			var allResults []usermanagementv1.UserProfile
+			for pager.HasNext() {
+				nextPage, err := pager.GetNext()
+				Expect(err).To(BeNil())
+				Expect(nextPage).ToNot(BeNil())
+				allResults = append(allResults, nextPage...)
+			}
+
+			// Test GetAll().
+			pager, err = userManagementService.NewUsersPager(listUsersOptions)
+			Expect(err).To(BeNil())
+			Expect(pager).ToNot(BeNil())
+
+			allItems, err := pager.GetAll()
+			Expect(err).To(BeNil())
+			Expect(allItems).ToNot(BeNil())
+
+			Expect(len(allItems)).To(Equal(len(allResults)))
+			fmt.Fprintf(GinkgoWriter, "ListUsers() returned a total of %d item(s) using UsersPager.\n", len(allResults))
 		})
 	})
 
@@ -322,34 +409,3 @@ var _ = Describe(`UserManagementV1 Integration Tests`, func() {
 		})
 	})
 })
-
-func getStartTokenFromURL(sptr *string) *string {
-	if sptr == nil {
-		return nil
-	}
-
-	s := *sptr
-	if s == "" {
-		return nil
-	}
-
-	u, err := url.Parse(s)
-	if err != nil {
-		return nil
-	}
-
-	if u.RawQuery == "" {
-		return nil
-	}
-
-	q, err := url.ParseQuery(u.RawQuery)
-	if err != nil {
-		return nil
-	}
-
-	token := q.Get("_start")
-	if token == "" {
-		return nil
-	}
-	return &token
-}

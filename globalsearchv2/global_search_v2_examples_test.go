@@ -1,3 +1,4 @@
+//go:build examples
 // +build examples
 
 /**
@@ -44,21 +45,22 @@ import (
 // in a configuration file and then:
 // export IBM_CREDENTIALS_FILE=<name of configuration file>
 //
-const externalConfigFile = "../global_search.env"
-
-var (
-	globalSearchService *globalsearchv2.GlobalSearchV2
-	config              map[string]string
-	configLoaded        bool = false
-)
-
-func shouldSkipTest() {
-	if !configLoaded {
-		Skip("External configuration is not available, skipping tests...")
-	}
-}
 
 var _ = Describe(`GlobalSearchV2 Examples Tests`, func() {
+	const externalConfigFile = "../global_search.env"
+
+	var (
+		globalSearchService *globalsearchv2.GlobalSearchV2
+		config              map[string]string
+		configLoaded        bool = false
+	)
+
+	var shouldSkipTest = func() {
+		if !configLoaded {
+			Skip("External configuration is not available, skipping tests...")
+		}
+	}
+
 	Describe(`External configuration`, func() {
 		It("Successfully load the configuration", func() {
 			var err error
@@ -153,26 +155,6 @@ var _ = Describe(`GlobalSearchV2 Examples Tests`, func() {
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(200))
 			Expect(scanResult).ToNot(BeNil())
-
-		})
-		It(`GetSupportedTypes request example`, func() {
-			fmt.Println("\nGetSupportedTypes() result:")
-			// begin-get_supported_types
-
-			getSupportedTypesOptions := globalSearchService.NewGetSupportedTypesOptions()
-
-			supportedTypesList, response, err := globalSearchService.GetSupportedTypes(getSupportedTypesOptions)
-			if err != nil {
-				panic(err)
-			}
-			b, _ := json.MarshalIndent(supportedTypesList, "", "  ")
-			fmt.Println(string(b))
-
-			// end-get_supported_types
-
-			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(supportedTypesList).ToNot(BeNil())
 
 		})
 	})

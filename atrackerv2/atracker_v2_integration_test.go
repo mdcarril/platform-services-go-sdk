@@ -2,7 +2,7 @@
 // +build integration
 
 /**
- * (C) Copyright IBM Corp. 2022.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,9 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 
 	const externalConfigFile = "../atracker_v2.env"
 
-	const notFoundTargetID = "deadbeef-2222-2222-2222-222222222222"
+	const notFoundTargetID = "ffffffff-1111-1111-1111-111111111111"
 
-	const notFoundRouteID = "deadbeef-2222-2222-2222-222222222222"
+	const notFoundRouteID = "ffffffff-2222-2222-2222-222222222222"
 
 	const badTargetType = "bad_target_type"
 
@@ -56,13 +56,12 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 		serviceURL                   string
 		config                       map[string]string
 		refreshTokenNotAuthorized    string
-	)
 
-	// Globlal variables to hold link values
-	var (
+		// Variables to hold link values
 		routeIDLink   string
 		targetIDLink  string
 		targetIDLink2 string
+		targetIDLink3 string
 	)
 
 	var shouldSkipTest = func() {
@@ -141,6 +140,7 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 				Name:        core.StringPtr("my-cos-target"),
 				TargetType:  core.StringPtr("cloud_object_storage"),
 				CosEndpoint: cosEndpointPrototypeModel,
+				Region:      core.StringPtr("us-south"),
 			}
 
 			target, response, err := atrackerService.CreateTarget(createTargetOptions)
@@ -150,7 +150,7 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 			Expect(target).ToNot(BeNil())
 
 			targetIDLink = *target.ID
-			fmt.Fprintf(GinkgoWriter, "Saved targetIDLink value: %v\n", targetIDLink)
+			fmt.Fprintf(GinkgoWriter, "Saved cos targetIDLink value: %v\n", targetIDLink)
 		})
 		It(`CreateTarget(createTargetOptions *CreateTargetOptions)`, func() {
 
@@ -172,6 +172,32 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 			Expect(target).ToNot(BeNil())
 
 			targetIDLink2 = *target.ID
+			fmt.Fprintf(GinkgoWriter, "Saved logdna targetIDLink value: %v\n", targetIDLink)
+		})
+
+		It(`CreateTarget(createTargetOptions *CreateTargetOptions)`, func() {
+
+			eventstreamsEndpointPrototypeModel := &atrackerv2.EventstreamsEndpointPrototype{
+				TargetCRN: core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"),
+				Topic:     core.StringPtr("my-test-topic"),
+				Brokers:   []string{"kafka-x:9094"},
+				APIKey:    core.StringPtr("xxxxxxxxxxx"),
+			}
+
+			createTargetOptions := &atrackerv2.CreateTargetOptions{
+				Name:                 core.StringPtr("my-ies-target"),
+				TargetType:           core.StringPtr("event_streams"),
+				EventstreamsEndpoint: eventstreamsEndpointPrototypeModel,
+			}
+
+			target, response, err := atrackerService.CreateTarget(createTargetOptions)
+
+			Expect(err).To(BeNil())
+			Expect(response.StatusCode).To(Equal(201))
+			Expect(target).ToNot(BeNil())
+
+			targetIDLink3 = *target.ID
+			fmt.Fprintf(GinkgoWriter, "Saved event streams targetIDLink value: %v\n", targetIDLink)
 		})
 
 		It(`Returns 400 when backend input validation fails`, func() {
@@ -351,48 +377,87 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 		BeforeEach(func() {
 			shouldSkipTest()
 		})
-		It(`ReplaceTarget(replaceTargetOptions *ReplaceTargetOptions)`, func() {
+		It(`ReplaceTarget(replaceTargetOptions *ReplaceTargetOptions) for cos type of target`, func() {
+
+			cosEndpointPrototypeModel := &atrackerv2.CosEndpointPrototype{
+				Endpoint:                core.StringPtr("s3.private.us-east.cloud-object-storage.appdomain.cloud"),
+				TargetCRN:               core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"),
+				Bucket:                  core.StringPtr("my-atracker-bucket-modified"),
+				APIKey:                  core.StringPtr("xxxxxxxxxxxxxx"),
+				ServiceToServiceEnabled: core.BoolPtr(true),
+			}
+			replaceTargetOptions := &atrackerv2.ReplaceTargetOptions{
+				ID:          &targetIDLink,
+				Name:        core.StringPtr("my-cos-target"),
+				CosEndpoint: cosEndpointPrototypeModel,
+			}
+
+			target, response, err := atrackerService.ReplaceTarget(replaceTargetOptions)
+			Expect(err).To(BeNil())
+			Expect(response.StatusCode).To(Equal(200))
+			Expect(target).ToNot(BeNil())
+		})
+
+		It(`ReplaceTarget(replaceTargetOptions *ReplaceTargetOptions) for logdna type of target`, func() {
+
+			logdnaEndpointPrototypeModel := &atrackerv2.LogdnaEndpointPrototype{
+				TargetCRN:    core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"),
+				IngestionKey: core.StringPtr("xxxxxxxxxxxxxx"),
+			}
+
+			replaceTargetOptions := &atrackerv2.ReplaceTargetOptions{
+				ID:             &targetIDLink2,
+				Name:           core.StringPtr("my-logdna-target-modified"),
+				LogdnaEndpoint: logdnaEndpointPrototypeModel,
+			}
+
+			target, response, err := atrackerService.ReplaceTarget(replaceTargetOptions)
+			Expect(err).To(BeNil())
+			Expect(response.StatusCode).To(Equal(200))
+			Expect(target).ToNot(BeNil())
+		})
+
+		It(`ReplaceTarget(replaceTargetOptions *ReplaceTargetOptions) for event streams type of target`, func() {
+
+			eventstreamsEndpointPrototypeModel := &atrackerv2.EventstreamsEndpointPrototype{
+				TargetCRN: core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"),
+				Topic:     core.StringPtr("my-test-topic"),
+				Brokers:   []string{"kafka-x:9094"},
+				APIKey:    core.StringPtr("xxxxxxxxxxxxx"),
+			}
+
+			replaceTargetOptions := &atrackerv2.ReplaceTargetOptions{
+				ID:                   &targetIDLink3,
+				Name:                 core.StringPtr("my-ies-target-modified"),
+				EventstreamsEndpoint: eventstreamsEndpointPrototypeModel,
+			}
+
+			target, response, err := atrackerService.ReplaceTarget(replaceTargetOptions)
+			Expect(err).To(BeNil())
+			Expect(response.StatusCode).To(Equal(200))
+			Expect(target).ToNot(BeNil())
+		})
+
+		It(`Returns 404 when target id is not found`, func() {
 
 			cosEndpointPrototypeModel := &atrackerv2.CosEndpointPrototype{
 				Endpoint:                core.StringPtr("s3.private.us-east.cloud-object-storage.appdomain.cloud"),
 				TargetCRN:               core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"),
 				Bucket:                  core.StringPtr("my-atracker-bucket"),
 				APIKey:                  core.StringPtr("xxxxxxxxxxxxxx"),
-				ServiceToServiceEnabled: core.BoolPtr(true),
+				ServiceToServiceEnabled: core.BoolPtr(false),
 			}
+
 			replaceTargetOptions := &atrackerv2.ReplaceTargetOptions{
-				ID:          &targetIDLink,
+				ID:          core.StringPtr(notFoundTargetID),
 				Name:        core.StringPtr("my-cos-target-modified"),
 				CosEndpoint: cosEndpointPrototypeModel,
 			}
+			_, response, err := atrackerService.ReplaceTarget(replaceTargetOptions)
 
-			target, response, err := atrackerService.ReplaceTarget(replaceTargetOptions)
-
-			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(target).ToNot(BeNil())
+			Expect(err).NotTo(BeNil())
+			Expect(response.StatusCode).To(Equal(404))
 		})
-	})
-
-	It(`Returns 404 when target id is not found`, func() {
-
-		cosEndpointPrototypeModel := &atrackerv2.CosEndpointPrototype{
-			Endpoint:                core.StringPtr("s3.private.us-east.cloud-object-storage.appdomain.cloud"),
-			TargetCRN:               core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"),
-			Bucket:                  core.StringPtr("my-atracker-bucket"),
-			APIKey:                  core.StringPtr("xxxxxxxxxxxxxx"),
-			ServiceToServiceEnabled: core.BoolPtr(false),
-		}
-
-		replaceTargetOptions := &atrackerv2.ReplaceTargetOptions{
-			ID:          core.StringPtr(notFoundTargetID),
-			Name:        core.StringPtr("my-cos-target-modified"),
-			CosEndpoint: cosEndpointPrototypeModel,
-		}
-		_, response, err := atrackerService.ReplaceTarget(replaceTargetOptions)
-
-		Expect(err).NotTo(BeNil())
-		Expect(response.StatusCode).To(Equal(404))
 	})
 
 	Describe(`ValidateTarget - Validate a target`, func() {
@@ -599,12 +664,12 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 			shouldSkipTest()
 		})
 		It(`PutSettings(putSettingsOptions *PutSettingsOptions)`, func() {
-
 			putSettingsOptions := &atrackerv2.PutSettingsOptions{
 				MetadataRegionPrimary:  core.StringPtr("us-south"),
 				PrivateAPIEndpointOnly: core.BoolPtr(false),
 				DefaultTargets:         []string{targetIDLink},
 				PermittedTargetRegions: []string{"us-south"},
+				MetadataRegionBackup:   core.StringPtr("eu-de"),
 			}
 
 			settings, response, err := atrackerService.PutSettings(putSettingsOptions)
@@ -640,58 +705,6 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 			}
 
 			_, response, err := atrackerServiceNotAuthorized.PutSettings(putSettingsOptions)
-
-			Expect(err).NotTo(BeNil())
-			Expect(response.StatusCode).To(Equal(403))
-		})
-	})
-
-	Describe(`PostMigration - Migrate Activity Tracker Event Routing configurations from v1 to v2`, func() {
-		BeforeEach(func() {
-			shouldSkipTest()
-		})
-		It(`PostMigration(postMigrationOptions *PostMigrationOptions)`, func() {
-
-			postMigrationOptions := &atrackerv2.PostMigrationOptions{}
-
-			migration, response, err := atrackerService.PostMigration(postMigrationOptions)
-
-			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(migration).ToNot(BeNil())
-		})
-
-		It(`Returns 403 when user is not authorized`, func() {
-
-			postMigrationOptions := &atrackerv2.PostMigrationOptions{}
-
-			_, response, err := atrackerServiceNotAuthorized.PostMigration(postMigrationOptions)
-
-			Expect(err).NotTo(BeNil())
-			Expect(response.StatusCode).To(Equal(403))
-		})
-	})
-
-	Describe(`GetMigration - Get the migration status`, func() {
-		BeforeEach(func() {
-			shouldSkipTest()
-		})
-		It(`GetMigration(getMigrationOptions *GetMigrationOptions)`, func() {
-
-			getMigrationOptions := &atrackerv2.GetMigrationOptions{}
-
-			migration, response, err := atrackerService.GetMigration(getMigrationOptions)
-
-			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(migration).ToNot(BeNil())
-		})
-
-		It(`Returns 403 when user is not authorized`, func() {
-
-			getMigrationOptions := &atrackerv2.GetMigrationOptions{}
-
-			_, response, err := atrackerServiceNotAuthorized.GetMigration(getMigrationOptions)
 
 			Expect(err).NotTo(BeNil())
 			Expect(response.StatusCode).To(Equal(403))
@@ -781,6 +794,16 @@ var _ = Describe(`AtrackerV2 Integration Tests`, func() {
 
 			deleteTargetOptions := &atrackerv2.DeleteTargetOptions{
 				ID: &targetIDLink2,
+			}
+
+			_, response, err := atrackerService.DeleteTarget(deleteTargetOptions)
+			Expect(err).To(BeNil())
+			Expect(response.StatusCode).To(Equal(200))
+		})
+		It(`DeleteTarget(deleteTargetOptions *DeleteTargetOptions)`, func() {
+
+			deleteTargetOptions := &atrackerv2.DeleteTargetOptions{
+				ID: &targetIDLink3,
 			}
 
 			_, response, err := atrackerService.DeleteTarget(deleteTargetOptions)

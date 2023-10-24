@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.32.0-4c6a3129-20210514-210323
+ * IBM OpenAPI SDK Code Generator Version: 3.72.1-43bf8bf6-20230525-193151
  */
 
 // Package resourcecontrollerv2 : Operations and models for the ResourceControllerV2 service
@@ -38,7 +38,7 @@ import (
 // provisioned globally in an account scope. Supports asynchronous provisioning of resources. Enables consumption of a
 // global resource through a Cloud Foundry space in any region.
 //
-// Version: 2.0
+// API Version: 2.0
 type ResourceControllerV2 struct {
 	Service *core.BaseService
 }
@@ -344,8 +344,8 @@ func (resourceController *ResourceControllerV2) CreateResourceInstanceWithContex
 }
 
 // GetResourceInstance : Get a resource instance
-// Retrieve a resource instance by ID. Find more details on a particular instance, like when it was provisioned and who
-// provisioned it.
+// Retrieve a resource instance by URL-encoded CRN or GUID. Find more details on a particular instance, like when it was
+// provisioned and who provisioned it.
 func (resourceController *ResourceControllerV2) GetResourceInstance(getResourceInstanceOptions *GetResourceInstanceOptions) (result *ResourceInstance, response *core.DetailedResponse, err error) {
 	return resourceController.GetResourceInstanceWithContext(context.Background(), getResourceInstanceOptions)
 }
@@ -405,8 +405,8 @@ func (resourceController *ResourceControllerV2) GetResourceInstanceWithContext(c
 }
 
 // DeleteResourceInstance : Delete a resource instance
-// Delete a resource instance by ID. If the resource instance has any resource keys or aliases associated with it, use
-// the `recursive=true parameter` to delete it.
+// Delete a resource instance by URL-encoded CRN or GUID. If the resource instance has any resource keys or aliases
+// associated with it, use the `recursive=true` parameter to delete it.
 func (resourceController *ResourceControllerV2) DeleteResourceInstance(deleteResourceInstanceOptions *DeleteResourceInstanceOptions) (response *core.DetailedResponse, err error) {
 	return resourceController.DeleteResourceInstanceWithContext(context.Background(), deleteResourceInstanceOptions)
 }
@@ -458,7 +458,8 @@ func (resourceController *ResourceControllerV2) DeleteResourceInstanceWithContex
 }
 
 // UpdateResourceInstance : Update a resource instance
-// You can use the ID to make updates to the resource instance, like changing the name or plan.
+// Use the resource instance URL-encoded CRN or GUID to make updates to the resource instance, like changing the name or
+// plan.
 func (resourceController *ResourceControllerV2) UpdateResourceInstance(updateResourceInstanceOptions *UpdateResourceInstanceOptions) (result *ResourceInstance, response *core.DetailedResponse, err error) {
 	return resourceController.UpdateResourceInstanceWithContext(context.Background(), updateResourceInstanceOptions)
 }
@@ -672,8 +673,8 @@ func (resourceController *ResourceControllerV2) ListResourceKeysForInstanceWithC
 }
 
 // LockResourceInstance : Lock a resource instance
-// Locks a resource instance by ID. A locked instance can not be updated or deleted. It does not affect actions
-// performed on child resources like aliases, bindings or keys.
+// Locks a resource instance. A locked instance can not be updated or deleted. It does not affect actions performed on
+// child resources like aliases, bindings, or keys.
 func (resourceController *ResourceControllerV2) LockResourceInstance(lockResourceInstanceOptions *LockResourceInstanceOptions) (result *ResourceInstance, response *core.DetailedResponse, err error) {
 	return resourceController.LockResourceInstanceWithContext(context.Background(), lockResourceInstanceOptions)
 }
@@ -767,6 +768,67 @@ func (resourceController *ResourceControllerV2) UnlockResourceInstanceWithContex
 	}
 
 	sdkHeaders := common.GetSdkHeaders("resource_controller", "V2", "UnlockResourceInstance")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	request, err := builder.Build()
+	if err != nil {
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = resourceController.Service.Request(request, &rawResponse)
+	if err != nil {
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalResourceInstance)
+		if err != nil {
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CancelLastopResourceInstance : Cancel the in progress last operation of the resource instance
+// Cancel the in progress last operation of the resource instance. After successful cancellation, the resource instance
+// is removed.
+func (resourceController *ResourceControllerV2) CancelLastopResourceInstance(cancelLastopResourceInstanceOptions *CancelLastopResourceInstanceOptions) (result *ResourceInstance, response *core.DetailedResponse, err error) {
+	return resourceController.CancelLastopResourceInstanceWithContext(context.Background(), cancelLastopResourceInstanceOptions)
+}
+
+// CancelLastopResourceInstanceWithContext is an alternate form of the CancelLastopResourceInstance method which supports a Context parameter
+func (resourceController *ResourceControllerV2) CancelLastopResourceInstanceWithContext(ctx context.Context, cancelLastopResourceInstanceOptions *CancelLastopResourceInstanceOptions) (result *ResourceInstance, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(cancelLastopResourceInstanceOptions, "cancelLastopResourceInstanceOptions cannot be nil")
+	if err != nil {
+		return
+	}
+	err = core.ValidateStruct(cancelLastopResourceInstanceOptions, "cancelLastopResourceInstanceOptions")
+	if err != nil {
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *cancelLastopResourceInstanceOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = resourceController.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(resourceController.Service.Options.URL, `/v2/resource_instances/{id}/last_operation`, pathParamsMap)
+	if err != nil {
+		return
+	}
+
+	for headerName, headerValue := range cancelLastopResourceInstanceOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	sdkHeaders := common.GetSdkHeaders("resource_controller", "V2", "CancelLastopResourceInstance")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
@@ -945,8 +1007,8 @@ func (resourceController *ResourceControllerV2) CreateResourceKeyWithContext(ctx
 	return
 }
 
-// GetResourceKey : Get resource key by ID
-// View a resource key and all of its details, like the credentials for the key and who created it.
+// GetResourceKey : Get resource key
+// View the details of a resource key by URL-encoded CRN or GUID, like the credentials for the key and who created it.
 func (resourceController *ResourceControllerV2) GetResourceKey(getResourceKeyOptions *GetResourceKeyOptions) (result *ResourceKey, response *core.DetailedResponse, err error) {
 	return resourceController.GetResourceKeyWithContext(context.Background(), getResourceKeyOptions)
 }
@@ -1005,7 +1067,7 @@ func (resourceController *ResourceControllerV2) GetResourceKeyWithContext(ctx co
 	return
 }
 
-// DeleteResourceKey : Delete a resource key by ID
+// DeleteResourceKey : Delete a resource key
 // Deleting a resource key does not affect any resource instance or resource alias associated with the key.
 func (resourceController *ResourceControllerV2) DeleteResourceKey(deleteResourceKeyOptions *DeleteResourceKeyOptions) (response *core.DetailedResponse, err error) {
 	return resourceController.DeleteResourceKeyWithContext(context.Background(), deleteResourceKeyOptions)
@@ -1054,7 +1116,7 @@ func (resourceController *ResourceControllerV2) DeleteResourceKeyWithContext(ctx
 }
 
 // UpdateResourceKey : Update a resource key
-// Use the resource key ID to update the name of the resource key.
+// Use the resource key URL-encoded CRN or GUID to update the resource key.
 func (resourceController *ResourceControllerV2) UpdateResourceKey(updateResourceKeyOptions *UpdateResourceKeyOptions) (result *ResourceKey, response *core.DetailedResponse, err error) {
 	return resourceController.UpdateResourceKeyWithContext(context.Background(), updateResourceKeyOptions)
 }
@@ -1391,7 +1453,7 @@ func (resourceController *ResourceControllerV2) DeleteResourceBindingWithContext
 }
 
 // UpdateResourceBinding : Update a resource binding
-// Use the resource binding ID to update the name of the resource binding.
+// Use the resource binding URL-encoded CRN or GUID to update the resource binding.
 func (resourceController *ResourceControllerV2) UpdateResourceBinding(updateResourceBindingOptions *UpdateResourceBindingOptions) (result *ResourceBinding, response *core.DetailedResponse, err error) {
 	return resourceController.UpdateResourceBindingWithContext(context.Background(), updateResourceBindingOptions)
 }
@@ -1677,8 +1739,8 @@ func (resourceController *ResourceControllerV2) GetResourceAliasWithContext(ctx 
 }
 
 // DeleteResourceAlias : Delete a resource alias
-// If the resource alias has any resource keys or bindings associated with it, you must delete those child resources
-// before deleting the resource alias.
+// Delete a resource alias by URL-encoded CRN or GUID. If the resource alias has any resource keys or bindings
+// associated with it, use the `recursive=true` parameter to delete it.
 func (resourceController *ResourceControllerV2) DeleteResourceAlias(deleteResourceAliasOptions *DeleteResourceAliasOptions) (response *core.DetailedResponse, err error) {
 	return resourceController.DeleteResourceAliasWithContext(context.Background(), deleteResourceAliasOptions)
 }
@@ -1715,6 +1777,10 @@ func (resourceController *ResourceControllerV2) DeleteResourceAliasWithContext(c
 		builder.AddHeader(headerName, headerValue)
 	}
 
+	if deleteResourceAliasOptions.Recursive != nil {
+		builder.AddQuery("recursive", fmt.Sprint(*deleteResourceAliasOptions.Recursive))
+	}
+
 	request, err := builder.Build()
 	if err != nil {
 		return
@@ -1726,7 +1792,7 @@ func (resourceController *ResourceControllerV2) DeleteResourceAliasWithContext(c
 }
 
 // UpdateResourceAlias : Update a resource alias
-// Use the resource alias ID to update the name of the resource alias.
+// Use the resource alias URL-encoded CRN or GUID to update the resource alias.
 func (resourceController *ResourceControllerV2) UpdateResourceAlias(updateResourceAliasOptions *UpdateResourceAliasOptions) (result *ResourceAlias, response *core.DetailedResponse, err error) {
 	return resourceController.UpdateResourceAliasWithContext(context.Background(), updateResourceAliasOptions)
 }
@@ -1899,6 +1965,9 @@ func (resourceController *ResourceControllerV2) ListReclamationsWithContext(ctx 
 	if listReclamationsOptions.ResourceInstanceID != nil {
 		builder.AddQuery("resource_instance_id", fmt.Sprint(*listReclamationsOptions.ResourceInstanceID))
 	}
+	if listReclamationsOptions.ResourceGroupID != nil {
+		builder.AddQuery("resource_group_id", fmt.Sprint(*listReclamationsOptions.ResourceGroupID))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -1996,17 +2065,45 @@ func (resourceController *ResourceControllerV2) RunReclamationActionWithContext(
 	return
 }
 
+// CancelLastopResourceInstanceOptions : The CancelLastopResourceInstance options.
+type CancelLastopResourceInstanceOptions struct {
+	// The resource instance URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests
+	Headers map[string]string
+}
+
+// NewCancelLastopResourceInstanceOptions : Instantiate CancelLastopResourceInstanceOptions
+func (*ResourceControllerV2) NewCancelLastopResourceInstanceOptions(id string) *CancelLastopResourceInstanceOptions {
+	return &CancelLastopResourceInstanceOptions{
+		ID: core.StringPtr(id),
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *CancelLastopResourceInstanceOptions) SetID(id string) *CancelLastopResourceInstanceOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CancelLastopResourceInstanceOptions) SetHeaders(param map[string]string) *CancelLastopResourceInstanceOptions {
+	options.Headers = param
+	return options
+}
+
 // CreateResourceAliasOptions : The CreateResourceAlias options.
 type CreateResourceAliasOptions struct {
 	// The name of the alias. Must be 180 characters or less and cannot include any special characters other than `(space)
 	// - . _ :`.
-	Name *string `validate:"required"`
+	Name *string `json:"name" validate:"required"`
 
-	// The short or long ID of resource instance.
-	Source *string `validate:"required"`
+	// The ID of resource instance.
+	Source *string `json:"source" validate:"required"`
 
 	// The CRN of target name(space) in a specific environment, for example, space in Dallas YP, CFEE instance etc.
-	Target *string `validate:"required"`
+	Target *string `json:"target" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2022,21 +2119,21 @@ func (*ResourceControllerV2) NewCreateResourceAliasOptions(name string, source s
 }
 
 // SetName : Allow user to set Name
-func (options *CreateResourceAliasOptions) SetName(name string) *CreateResourceAliasOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *CreateResourceAliasOptions) SetName(name string) *CreateResourceAliasOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetSource : Allow user to set Source
-func (options *CreateResourceAliasOptions) SetSource(source string) *CreateResourceAliasOptions {
-	options.Source = core.StringPtr(source)
-	return options
+func (_options *CreateResourceAliasOptions) SetSource(source string) *CreateResourceAliasOptions {
+	_options.Source = core.StringPtr(source)
+	return _options
 }
 
 // SetTarget : Allow user to set Target
-func (options *CreateResourceAliasOptions) SetTarget(target string) *CreateResourceAliasOptions {
-	options.Target = core.StringPtr(target)
-	return options
+func (_options *CreateResourceAliasOptions) SetTarget(target string) *CreateResourceAliasOptions {
+	_options.Target = core.StringPtr(target)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2047,22 +2144,23 @@ func (options *CreateResourceAliasOptions) SetHeaders(param map[string]string) *
 
 // CreateResourceBindingOptions : The CreateResourceBinding options.
 type CreateResourceBindingOptions struct {
-	// The short or long ID of resource alias.
-	Source *string `validate:"required"`
+	// The ID of resource alias.
+	Source *string `json:"source" validate:"required"`
 
 	// The CRN of application to bind to in a specific environment, for example, Dallas YP, CFEE instance.
-	Target *string `validate:"required"`
+	Target *string `json:"target" validate:"required"`
 
 	// The name of the binding. Must be 180 characters or less and cannot include any special characters other than
 	// `(space) - . _ :`.
-	Name *string
+	Name *string `json:"name,omitempty"`
 
 	// Configuration options represented as key-value pairs. Service defined options are passed through to the target
 	// resource brokers, whereas platform defined options are not.
-	Parameters *ResourceBindingPostParameters
+	Parameters *ResourceBindingPostParameters `json:"parameters,omitempty"`
 
-	// The role name or it's CRN.
-	Role *string
+	// The base IAM service role name (Reader, Writer, or Manager), or the service or custom role CRN. Refer to service’s
+	// documentation for supported roles.
+	Role *string `json:"role,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2077,33 +2175,33 @@ func (*ResourceControllerV2) NewCreateResourceBindingOptions(source string, targ
 }
 
 // SetSource : Allow user to set Source
-func (options *CreateResourceBindingOptions) SetSource(source string) *CreateResourceBindingOptions {
-	options.Source = core.StringPtr(source)
-	return options
+func (_options *CreateResourceBindingOptions) SetSource(source string) *CreateResourceBindingOptions {
+	_options.Source = core.StringPtr(source)
+	return _options
 }
 
 // SetTarget : Allow user to set Target
-func (options *CreateResourceBindingOptions) SetTarget(target string) *CreateResourceBindingOptions {
-	options.Target = core.StringPtr(target)
-	return options
+func (_options *CreateResourceBindingOptions) SetTarget(target string) *CreateResourceBindingOptions {
+	_options.Target = core.StringPtr(target)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *CreateResourceBindingOptions) SetName(name string) *CreateResourceBindingOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *CreateResourceBindingOptions) SetName(name string) *CreateResourceBindingOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetParameters : Allow user to set Parameters
-func (options *CreateResourceBindingOptions) SetParameters(parameters *ResourceBindingPostParameters) *CreateResourceBindingOptions {
-	options.Parameters = parameters
-	return options
+func (_options *CreateResourceBindingOptions) SetParameters(parameters *ResourceBindingPostParameters) *CreateResourceBindingOptions {
+	_options.Parameters = parameters
+	return _options
 }
 
 // SetRole : Allow user to set Role
-func (options *CreateResourceBindingOptions) SetRole(role string) *CreateResourceBindingOptions {
-	options.Role = core.StringPtr(role)
-	return options
+func (_options *CreateResourceBindingOptions) SetRole(role string) *CreateResourceBindingOptions {
+	_options.Role = core.StringPtr(role)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2116,31 +2214,31 @@ func (options *CreateResourceBindingOptions) SetHeaders(param map[string]string)
 type CreateResourceInstanceOptions struct {
 	// The name of the instance. Must be 180 characters or less and cannot include any special characters other than
 	// `(space) - . _ :`.
-	Name *string `validate:"required"`
+	Name *string `json:"name" validate:"required"`
 
 	// The deployment location where the instance should be hosted.
-	Target *string `validate:"required"`
+	Target *string `json:"target" validate:"required"`
 
-	// Short or long ID of resource group.
-	ResourceGroup *string `validate:"required"`
+	// The ID of the resource group.
+	ResourceGroup *string `json:"resource_group" validate:"required"`
 
 	// The unique ID of the plan associated with the offering. This value is provided by and stored in the global catalog.
-	ResourcePlanID *string `validate:"required"`
+	ResourcePlanID *string `json:"resource_plan_id" validate:"required"`
 
 	// Tags that are attached to the instance after provisioning. These tags can be searched and managed through the
 	// Tagging API in IBM Cloud.
-	Tags []string
+	Tags []string `json:"tags,omitempty"`
 
 	// A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region
 	// instance delete call.
-	AllowCleanup *bool
+	AllowCleanup *bool `json:"allow_cleanup,omitempty"`
 
 	// Configuration options represented as key-value pairs that are passed through to the target resource brokers.
-	Parameters map[string]interface{}
+	Parameters map[string]interface{} `json:"parameters,omitempty"`
 
 	// Indicates if the resource instance is locked for further update or delete operations. It does not affect actions
 	// performed on child resources like aliases, bindings or keys. False by default.
-	EntityLock *bool
+	EntityLock *bool `json:"Entity-Lock,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2157,51 +2255,51 @@ func (*ResourceControllerV2) NewCreateResourceInstanceOptions(name string, targe
 }
 
 // SetName : Allow user to set Name
-func (options *CreateResourceInstanceOptions) SetName(name string) *CreateResourceInstanceOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *CreateResourceInstanceOptions) SetName(name string) *CreateResourceInstanceOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetTarget : Allow user to set Target
-func (options *CreateResourceInstanceOptions) SetTarget(target string) *CreateResourceInstanceOptions {
-	options.Target = core.StringPtr(target)
-	return options
+func (_options *CreateResourceInstanceOptions) SetTarget(target string) *CreateResourceInstanceOptions {
+	_options.Target = core.StringPtr(target)
+	return _options
 }
 
 // SetResourceGroup : Allow user to set ResourceGroup
-func (options *CreateResourceInstanceOptions) SetResourceGroup(resourceGroup string) *CreateResourceInstanceOptions {
-	options.ResourceGroup = core.StringPtr(resourceGroup)
-	return options
+func (_options *CreateResourceInstanceOptions) SetResourceGroup(resourceGroup string) *CreateResourceInstanceOptions {
+	_options.ResourceGroup = core.StringPtr(resourceGroup)
+	return _options
 }
 
 // SetResourcePlanID : Allow user to set ResourcePlanID
-func (options *CreateResourceInstanceOptions) SetResourcePlanID(resourcePlanID string) *CreateResourceInstanceOptions {
-	options.ResourcePlanID = core.StringPtr(resourcePlanID)
-	return options
+func (_options *CreateResourceInstanceOptions) SetResourcePlanID(resourcePlanID string) *CreateResourceInstanceOptions {
+	_options.ResourcePlanID = core.StringPtr(resourcePlanID)
+	return _options
 }
 
 // SetTags : Allow user to set Tags
-func (options *CreateResourceInstanceOptions) SetTags(tags []string) *CreateResourceInstanceOptions {
-	options.Tags = tags
-	return options
+func (_options *CreateResourceInstanceOptions) SetTags(tags []string) *CreateResourceInstanceOptions {
+	_options.Tags = tags
+	return _options
 }
 
 // SetAllowCleanup : Allow user to set AllowCleanup
-func (options *CreateResourceInstanceOptions) SetAllowCleanup(allowCleanup bool) *CreateResourceInstanceOptions {
-	options.AllowCleanup = core.BoolPtr(allowCleanup)
-	return options
+func (_options *CreateResourceInstanceOptions) SetAllowCleanup(allowCleanup bool) *CreateResourceInstanceOptions {
+	_options.AllowCleanup = core.BoolPtr(allowCleanup)
+	return _options
 }
 
 // SetParameters : Allow user to set Parameters
-func (options *CreateResourceInstanceOptions) SetParameters(parameters map[string]interface{}) *CreateResourceInstanceOptions {
-	options.Parameters = parameters
-	return options
+func (_options *CreateResourceInstanceOptions) SetParameters(parameters map[string]interface{}) *CreateResourceInstanceOptions {
+	_options.Parameters = parameters
+	return _options
 }
 
 // SetEntityLock : Allow user to set EntityLock
-func (options *CreateResourceInstanceOptions) SetEntityLock(entityLock bool) *CreateResourceInstanceOptions {
-	options.EntityLock = core.BoolPtr(entityLock)
-	return options
+func (_options *CreateResourceInstanceOptions) SetEntityLock(entityLock bool) *CreateResourceInstanceOptions {
+	_options.EntityLock = core.BoolPtr(entityLock)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2213,17 +2311,18 @@ func (options *CreateResourceInstanceOptions) SetHeaders(param map[string]string
 // CreateResourceKeyOptions : The CreateResourceKey options.
 type CreateResourceKeyOptions struct {
 	// The name of the key.
-	Name *string `validate:"required"`
+	Name *string `json:"name" validate:"required"`
 
-	// The short or long ID of resource instance or alias.
-	Source *string `validate:"required"`
+	// The ID of resource instance or alias.
+	Source *string `json:"source" validate:"required"`
 
 	// Configuration options represented as key-value pairs. Service defined options are passed through to the target
 	// resource brokers, whereas platform defined options are not.
-	Parameters *ResourceKeyPostParameters
+	Parameters *ResourceKeyPostParameters `json:"parameters,omitempty"`
 
-	// The role name or it's CRN.
-	Role *string
+	// The base IAM service role name (Reader, Writer, or Manager), or the service or custom role CRN. Refer to service’s
+	// documentation for supported roles.
+	Role *string `json:"role,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2238,27 +2337,27 @@ func (*ResourceControllerV2) NewCreateResourceKeyOptions(name string, source str
 }
 
 // SetName : Allow user to set Name
-func (options *CreateResourceKeyOptions) SetName(name string) *CreateResourceKeyOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *CreateResourceKeyOptions) SetName(name string) *CreateResourceKeyOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetSource : Allow user to set Source
-func (options *CreateResourceKeyOptions) SetSource(source string) *CreateResourceKeyOptions {
-	options.Source = core.StringPtr(source)
-	return options
+func (_options *CreateResourceKeyOptions) SetSource(source string) *CreateResourceKeyOptions {
+	_options.Source = core.StringPtr(source)
+	return _options
 }
 
 // SetParameters : Allow user to set Parameters
-func (options *CreateResourceKeyOptions) SetParameters(parameters *ResourceKeyPostParameters) *CreateResourceKeyOptions {
-	options.Parameters = parameters
-	return options
+func (_options *CreateResourceKeyOptions) SetParameters(parameters *ResourceKeyPostParameters) *CreateResourceKeyOptions {
+	_options.Parameters = parameters
+	return _options
 }
 
 // SetRole : Allow user to set Role
-func (options *CreateResourceKeyOptions) SetRole(role string) *CreateResourceKeyOptions {
-	options.Role = core.StringPtr(role)
-	return options
+func (_options *CreateResourceKeyOptions) SetRole(role string) *CreateResourceKeyOptions {
+	_options.Role = core.StringPtr(role)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2269,6 +2368,12 @@ func (options *CreateResourceKeyOptions) SetHeaders(param map[string]string) *Cr
 
 // Credentials : The credentials for a resource.
 type Credentials struct {
+	// If present, the user doesn't have the correct access to view the credentials and the details are redacted.  The
+	// string value identifies the level of access that's required to view the credential. For additional information, see
+	// [viewing a
+	// credential](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui#viewing-credentials-ui).
+	Redacted *string `json:"REDACTED,omitempty"`
+
 	// The API key for the credentials.
 	Apikey *string `json:"apikey,omitempty"`
 
@@ -2288,12 +2393,30 @@ type Credentials struct {
 	additionalProperties map[string]interface{}
 }
 
+// Constants associated with the Credentials.Redacted property.
+// If present, the user doesn't have the correct access to view the credentials and the details are redacted.  The
+// string value identifies the level of access that's required to view the credential. For additional information, see
+// [viewing a
+// credential](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui#viewing-credentials-ui).
+const (
+	CredentialsRedactedRedactedConst         = "REDACTED"
+	CredentialsRedactedRedactedExplicitConst = "REDACTED_EXPLICIT" // #nosec G101
+)
+
 // SetProperty allows the user to set an arbitrary property on an instance of Credentials
 func (o *Credentials) SetProperty(key string, value interface{}) {
 	if o.additionalProperties == nil {
 		o.additionalProperties = make(map[string]interface{})
 	}
 	o.additionalProperties[key] = value
+}
+
+// SetProperties allows the user to set a map of arbitrary properties on an instance of Credentials
+func (o *Credentials) SetProperties(m map[string]interface{}) {
+	o.additionalProperties = make(map[string]interface{})
+	for k, v := range m {
+		o.additionalProperties[k] = v
+	}
 }
 
 // GetProperty allows the user to retrieve an arbitrary property from an instance of Credentials
@@ -2313,6 +2436,9 @@ func (o *Credentials) MarshalJSON() (buffer []byte, err error) {
 		for k, v := range o.additionalProperties {
 			m[k] = v
 		}
+	}
+	if o.Redacted != nil {
+		m["REDACTED"] = o.Redacted
 	}
 	if o.Apikey != nil {
 		m["apikey"] = o.Apikey
@@ -2336,6 +2462,11 @@ func (o *Credentials) MarshalJSON() (buffer []byte, err error) {
 // UnmarshalCredentials unmarshals an instance of Credentials from the specified map of raw messages.
 func UnmarshalCredentials(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(Credentials)
+	err = core.UnmarshalPrimitive(m, "REDACTED", &obj.Redacted)
+	if err != nil {
+		return
+	}
+	delete(m, "REDACTED")
 	err = core.UnmarshalPrimitive(m, "apikey", &obj.Apikey)
 	if err != nil {
 		return
@@ -2376,8 +2507,11 @@ func UnmarshalCredentials(m map[string]json.RawMessage, result interface{}) (err
 
 // DeleteResourceAliasOptions : The DeleteResourceAlias options.
 type DeleteResourceAliasOptions struct {
-	// The short or long ID of the alias.
-	ID *string `validate:"required,ne="`
+	// The resource alias URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Deletes the resource bindings and keys associated with the alias.
+	Recursive *bool `json:"recursive,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2391,9 +2525,15 @@ func (*ResourceControllerV2) NewDeleteResourceAliasOptions(id string) *DeleteRes
 }
 
 // SetID : Allow user to set ID
-func (options *DeleteResourceAliasOptions) SetID(id string) *DeleteResourceAliasOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *DeleteResourceAliasOptions) SetID(id string) *DeleteResourceAliasOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetRecursive : Allow user to set Recursive
+func (_options *DeleteResourceAliasOptions) SetRecursive(recursive bool) *DeleteResourceAliasOptions {
+	_options.Recursive = core.BoolPtr(recursive)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2404,8 +2544,8 @@ func (options *DeleteResourceAliasOptions) SetHeaders(param map[string]string) *
 
 // DeleteResourceBindingOptions : The DeleteResourceBinding options.
 type DeleteResourceBindingOptions struct {
-	// The short or long ID of the binding.
-	ID *string `validate:"required,ne="`
+	// The resource binding URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2419,9 +2559,9 @@ func (*ResourceControllerV2) NewDeleteResourceBindingOptions(id string) *DeleteR
 }
 
 // SetID : Allow user to set ID
-func (options *DeleteResourceBindingOptions) SetID(id string) *DeleteResourceBindingOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *DeleteResourceBindingOptions) SetID(id string) *DeleteResourceBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2432,11 +2572,11 @@ func (options *DeleteResourceBindingOptions) SetHeaders(param map[string]string)
 
 // DeleteResourceInstanceOptions : The DeleteResourceInstance options.
 type DeleteResourceInstanceOptions struct {
-	// The short or long ID of the instance.
-	ID *string `validate:"required,ne="`
+	// The resource instance URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Will delete resource bindings, keys and aliases associated with the instance.
-	Recursive *bool
+	Recursive *bool `json:"recursive,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2450,15 +2590,15 @@ func (*ResourceControllerV2) NewDeleteResourceInstanceOptions(id string) *Delete
 }
 
 // SetID : Allow user to set ID
-func (options *DeleteResourceInstanceOptions) SetID(id string) *DeleteResourceInstanceOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *DeleteResourceInstanceOptions) SetID(id string) *DeleteResourceInstanceOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetRecursive : Allow user to set Recursive
-func (options *DeleteResourceInstanceOptions) SetRecursive(recursive bool) *DeleteResourceInstanceOptions {
-	options.Recursive = core.BoolPtr(recursive)
-	return options
+func (_options *DeleteResourceInstanceOptions) SetRecursive(recursive bool) *DeleteResourceInstanceOptions {
+	_options.Recursive = core.BoolPtr(recursive)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2469,8 +2609,8 @@ func (options *DeleteResourceInstanceOptions) SetHeaders(param map[string]string
 
 // DeleteResourceKeyOptions : The DeleteResourceKey options.
 type DeleteResourceKeyOptions struct {
-	// The short or long ID of the key.
-	ID *string `validate:"required,ne="`
+	// The resource key URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2484,9 +2624,9 @@ func (*ResourceControllerV2) NewDeleteResourceKeyOptions(id string) *DeleteResou
 }
 
 // SetID : Allow user to set ID
-func (options *DeleteResourceKeyOptions) SetID(id string) *DeleteResourceKeyOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *DeleteResourceKeyOptions) SetID(id string) *DeleteResourceKeyOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2497,8 +2637,8 @@ func (options *DeleteResourceKeyOptions) SetHeaders(param map[string]string) *De
 
 // GetResourceAliasOptions : The GetResourceAlias options.
 type GetResourceAliasOptions struct {
-	// The short or long ID of the alias.
-	ID *string `validate:"required,ne="`
+	// The resource alias URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2512,9 +2652,9 @@ func (*ResourceControllerV2) NewGetResourceAliasOptions(id string) *GetResourceA
 }
 
 // SetID : Allow user to set ID
-func (options *GetResourceAliasOptions) SetID(id string) *GetResourceAliasOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *GetResourceAliasOptions) SetID(id string) *GetResourceAliasOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2525,8 +2665,8 @@ func (options *GetResourceAliasOptions) SetHeaders(param map[string]string) *Get
 
 // GetResourceBindingOptions : The GetResourceBinding options.
 type GetResourceBindingOptions struct {
-	// The short or long ID of the binding.
-	ID *string `validate:"required,ne="`
+	// The resource binding URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2540,9 +2680,9 @@ func (*ResourceControllerV2) NewGetResourceBindingOptions(id string) *GetResourc
 }
 
 // SetID : Allow user to set ID
-func (options *GetResourceBindingOptions) SetID(id string) *GetResourceBindingOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *GetResourceBindingOptions) SetID(id string) *GetResourceBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2553,8 +2693,8 @@ func (options *GetResourceBindingOptions) SetHeaders(param map[string]string) *G
 
 // GetResourceInstanceOptions : The GetResourceInstance options.
 type GetResourceInstanceOptions struct {
-	// The short or long ID of the instance.
-	ID *string `validate:"required,ne="`
+	// The resource instance URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2568,9 +2708,9 @@ func (*ResourceControllerV2) NewGetResourceInstanceOptions(id string) *GetResour
 }
 
 // SetID : Allow user to set ID
-func (options *GetResourceInstanceOptions) SetID(id string) *GetResourceInstanceOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *GetResourceInstanceOptions) SetID(id string) *GetResourceInstanceOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2581,8 +2721,8 @@ func (options *GetResourceInstanceOptions) SetHeaders(param map[string]string) *
 
 // GetResourceKeyOptions : The GetResourceKey options.
 type GetResourceKeyOptions struct {
-	// The short or long ID of the key.
-	ID *string `validate:"required,ne="`
+	// The resource key URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2596,9 +2736,9 @@ func (*ResourceControllerV2) NewGetResourceKeyOptions(id string) *GetResourceKey
 }
 
 // SetID : Allow user to set ID
-func (options *GetResourceKeyOptions) SetID(id string) *GetResourceKeyOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *GetResourceKeyOptions) SetID(id string) *GetResourceKeyOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2610,10 +2750,13 @@ func (options *GetResourceKeyOptions) SetHeaders(param map[string]string) *GetRe
 // ListReclamationsOptions : The ListReclamations options.
 type ListReclamationsOptions struct {
 	// An alpha-numeric value identifying the account ID.
-	AccountID *string
+	AccountID *string `json:"account_id,omitempty"`
 
-	// The short ID of the resource instance.
-	ResourceInstanceID *string
+	// The GUID of the resource instance.
+	ResourceInstanceID *string `json:"resource_instance_id,omitempty"`
+
+	// The ID of the resource group.
+	ResourceGroupID *string `json:"resource_group_id,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2625,15 +2768,21 @@ func (*ResourceControllerV2) NewListReclamationsOptions() *ListReclamationsOptio
 }
 
 // SetAccountID : Allow user to set AccountID
-func (options *ListReclamationsOptions) SetAccountID(accountID string) *ListReclamationsOptions {
-	options.AccountID = core.StringPtr(accountID)
-	return options
+func (_options *ListReclamationsOptions) SetAccountID(accountID string) *ListReclamationsOptions {
+	_options.AccountID = core.StringPtr(accountID)
+	return _options
 }
 
 // SetResourceInstanceID : Allow user to set ResourceInstanceID
-func (options *ListReclamationsOptions) SetResourceInstanceID(resourceInstanceID string) *ListReclamationsOptions {
-	options.ResourceInstanceID = core.StringPtr(resourceInstanceID)
-	return options
+func (_options *ListReclamationsOptions) SetResourceInstanceID(resourceInstanceID string) *ListReclamationsOptions {
+	_options.ResourceInstanceID = core.StringPtr(resourceInstanceID)
+	return _options
+}
+
+// SetResourceGroupID : Allow user to set ResourceGroupID
+func (_options *ListReclamationsOptions) SetResourceGroupID(resourceGroupID string) *ListReclamationsOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2644,16 +2793,16 @@ func (options *ListReclamationsOptions) SetHeaders(param map[string]string) *Lis
 
 // ListResourceAliasesForInstanceOptions : The ListResourceAliasesForInstance options.
 type ListResourceAliasesForInstanceOptions struct {
-	// The short or long ID of the instance.
-	ID *string `validate:"required,ne="`
+	// The resource instance URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Limit on how many items should be returned.
-	Limit *int64
+	Limit *int64 `json:"limit,omitempty"`
 
 	// An optional token that indicates the beginning of the page of results to be returned. Any additional query
 	// parameters are ignored if a page token is present. If omitted, the first page of results is returned. This value is
-	// obtained from the 'next_url' field of the operation response.
-	Start *string
+	// obtained from the 'start' query parameter in the 'next_url' field of the operation response.
+	Start *string `json:"start,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2667,21 +2816,21 @@ func (*ResourceControllerV2) NewListResourceAliasesForInstanceOptions(id string)
 }
 
 // SetID : Allow user to set ID
-func (options *ListResourceAliasesForInstanceOptions) SetID(id string) *ListResourceAliasesForInstanceOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *ListResourceAliasesForInstanceOptions) SetID(id string) *ListResourceAliasesForInstanceOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetLimit : Allow user to set Limit
-func (options *ListResourceAliasesForInstanceOptions) SetLimit(limit int64) *ListResourceAliasesForInstanceOptions {
-	options.Limit = core.Int64Ptr(limit)
-	return options
+func (_options *ListResourceAliasesForInstanceOptions) SetLimit(limit int64) *ListResourceAliasesForInstanceOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
 }
 
 // SetStart : Allow user to set Start
-func (options *ListResourceAliasesForInstanceOptions) SetStart(start string) *ListResourceAliasesForInstanceOptions {
-	options.Start = core.StringPtr(start)
-	return options
+func (_options *ListResourceAliasesForInstanceOptions) SetStart(start string) *ListResourceAliasesForInstanceOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2692,38 +2841,38 @@ func (options *ListResourceAliasesForInstanceOptions) SetHeaders(param map[strin
 
 // ListResourceAliasesOptions : The ListResourceAliases options.
 type ListResourceAliasesOptions struct {
-	// Short ID of the alias.
-	GUID *string
+	// The GUID of the alias.
+	GUID *string `json:"guid,omitempty"`
 
 	// The human-readable name of the alias.
-	Name *string
+	Name *string `json:"name,omitempty"`
 
-	// Resource instance short ID.
-	ResourceInstanceID *string
+	// The ID of the resource instance.
+	ResourceInstanceID *string `json:"resource_instance_id,omitempty"`
 
-	// Short ID of the instance in a specific targeted environment. For example, `service_instance_id` in a given IBM Cloud
+	// The ID of the instance in the target environment. For example, `service_instance_id` in a given IBM Cloud
 	// environment.
-	RegionInstanceID *string
+	RegionInstanceID *string `json:"region_instance_id,omitempty"`
 
 	// The unique ID of the offering (service name). This value is provided by and stored in the global catalog.
-	ResourceID *string
+	ResourceID *string `json:"resource_id,omitempty"`
 
-	// Short ID of Resource group.
-	ResourceGroupID *string
+	// The ID of the resource group.
+	ResourceGroupID *string `json:"resource_group_id,omitempty"`
 
 	// Limit on how many items should be returned.
-	Limit *int64
+	Limit *int64 `json:"limit,omitempty"`
 
 	// An optional token that indicates the beginning of the page of results to be returned. Any additional query
 	// parameters are ignored if a page token is present. If omitted, the first page of results is returned. This value is
-	// obtained from the 'next_url' field of the operation response.
-	Start *string
+	// obtained from the 'start' query parameter in the 'next_url' field of the operation response.
+	Start *string `json:"start,omitempty"`
 
 	// Start date inclusive filter.
-	UpdatedFrom *string
+	UpdatedFrom *string `json:"updated_from,omitempty"`
 
 	// End date inclusive filter.
-	UpdatedTo *string
+	UpdatedTo *string `json:"updated_to,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2735,63 +2884,63 @@ func (*ResourceControllerV2) NewListResourceAliasesOptions() *ListResourceAliase
 }
 
 // SetGUID : Allow user to set GUID
-func (options *ListResourceAliasesOptions) SetGUID(guid string) *ListResourceAliasesOptions {
-	options.GUID = core.StringPtr(guid)
-	return options
+func (_options *ListResourceAliasesOptions) SetGUID(guid string) *ListResourceAliasesOptions {
+	_options.GUID = core.StringPtr(guid)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *ListResourceAliasesOptions) SetName(name string) *ListResourceAliasesOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *ListResourceAliasesOptions) SetName(name string) *ListResourceAliasesOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetResourceInstanceID : Allow user to set ResourceInstanceID
-func (options *ListResourceAliasesOptions) SetResourceInstanceID(resourceInstanceID string) *ListResourceAliasesOptions {
-	options.ResourceInstanceID = core.StringPtr(resourceInstanceID)
-	return options
+func (_options *ListResourceAliasesOptions) SetResourceInstanceID(resourceInstanceID string) *ListResourceAliasesOptions {
+	_options.ResourceInstanceID = core.StringPtr(resourceInstanceID)
+	return _options
 }
 
 // SetRegionInstanceID : Allow user to set RegionInstanceID
-func (options *ListResourceAliasesOptions) SetRegionInstanceID(regionInstanceID string) *ListResourceAliasesOptions {
-	options.RegionInstanceID = core.StringPtr(regionInstanceID)
-	return options
+func (_options *ListResourceAliasesOptions) SetRegionInstanceID(regionInstanceID string) *ListResourceAliasesOptions {
+	_options.RegionInstanceID = core.StringPtr(regionInstanceID)
+	return _options
 }
 
 // SetResourceID : Allow user to set ResourceID
-func (options *ListResourceAliasesOptions) SetResourceID(resourceID string) *ListResourceAliasesOptions {
-	options.ResourceID = core.StringPtr(resourceID)
-	return options
+func (_options *ListResourceAliasesOptions) SetResourceID(resourceID string) *ListResourceAliasesOptions {
+	_options.ResourceID = core.StringPtr(resourceID)
+	return _options
 }
 
 // SetResourceGroupID : Allow user to set ResourceGroupID
-func (options *ListResourceAliasesOptions) SetResourceGroupID(resourceGroupID string) *ListResourceAliasesOptions {
-	options.ResourceGroupID = core.StringPtr(resourceGroupID)
-	return options
+func (_options *ListResourceAliasesOptions) SetResourceGroupID(resourceGroupID string) *ListResourceAliasesOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
 }
 
 // SetLimit : Allow user to set Limit
-func (options *ListResourceAliasesOptions) SetLimit(limit int64) *ListResourceAliasesOptions {
-	options.Limit = core.Int64Ptr(limit)
-	return options
+func (_options *ListResourceAliasesOptions) SetLimit(limit int64) *ListResourceAliasesOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
 }
 
 // SetStart : Allow user to set Start
-func (options *ListResourceAliasesOptions) SetStart(start string) *ListResourceAliasesOptions {
-	options.Start = core.StringPtr(start)
-	return options
+func (_options *ListResourceAliasesOptions) SetStart(start string) *ListResourceAliasesOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
 }
 
 // SetUpdatedFrom : Allow user to set UpdatedFrom
-func (options *ListResourceAliasesOptions) SetUpdatedFrom(updatedFrom string) *ListResourceAliasesOptions {
-	options.UpdatedFrom = core.StringPtr(updatedFrom)
-	return options
+func (_options *ListResourceAliasesOptions) SetUpdatedFrom(updatedFrom string) *ListResourceAliasesOptions {
+	_options.UpdatedFrom = core.StringPtr(updatedFrom)
+	return _options
 }
 
 // SetUpdatedTo : Allow user to set UpdatedTo
-func (options *ListResourceAliasesOptions) SetUpdatedTo(updatedTo string) *ListResourceAliasesOptions {
-	options.UpdatedTo = core.StringPtr(updatedTo)
-	return options
+func (_options *ListResourceAliasesOptions) SetUpdatedTo(updatedTo string) *ListResourceAliasesOptions {
+	_options.UpdatedTo = core.StringPtr(updatedTo)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2802,16 +2951,16 @@ func (options *ListResourceAliasesOptions) SetHeaders(param map[string]string) *
 
 // ListResourceBindingsForAliasOptions : The ListResourceBindingsForAlias options.
 type ListResourceBindingsForAliasOptions struct {
-	// The short or long ID of the alias.
-	ID *string `validate:"required,ne="`
+	// The resource alias URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Limit on how many items should be returned.
-	Limit *int64
+	Limit *int64 `json:"limit,omitempty"`
 
 	// An optional token that indicates the beginning of the page of results to be returned. Any additional query
 	// parameters are ignored if a page token is present. If omitted, the first page of results is returned. This value is
-	// obtained from the 'next_url' field of the operation response.
-	Start *string
+	// obtained from the 'start' query parameter in the 'next_url' field of the operation response.
+	Start *string `json:"start,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2825,21 +2974,21 @@ func (*ResourceControllerV2) NewListResourceBindingsForAliasOptions(id string) *
 }
 
 // SetID : Allow user to set ID
-func (options *ListResourceBindingsForAliasOptions) SetID(id string) *ListResourceBindingsForAliasOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *ListResourceBindingsForAliasOptions) SetID(id string) *ListResourceBindingsForAliasOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetLimit : Allow user to set Limit
-func (options *ListResourceBindingsForAliasOptions) SetLimit(limit int64) *ListResourceBindingsForAliasOptions {
-	options.Limit = core.Int64Ptr(limit)
-	return options
+func (_options *ListResourceBindingsForAliasOptions) SetLimit(limit int64) *ListResourceBindingsForAliasOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
 }
 
 // SetStart : Allow user to set Start
-func (options *ListResourceBindingsForAliasOptions) SetStart(start string) *ListResourceBindingsForAliasOptions {
-	options.Start = core.StringPtr(start)
-	return options
+func (_options *ListResourceBindingsForAliasOptions) SetStart(start string) *ListResourceBindingsForAliasOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2850,35 +2999,34 @@ func (options *ListResourceBindingsForAliasOptions) SetHeaders(param map[string]
 
 // ListResourceBindingsOptions : The ListResourceBindings options.
 type ListResourceBindingsOptions struct {
-	// The short ID of the binding.
-	GUID *string
+	// The GUID of the binding.
+	GUID *string `json:"guid,omitempty"`
 
 	// The human-readable name of the binding.
-	Name *string
+	Name *string `json:"name,omitempty"`
 
-	// Short ID of the resource group.
-	ResourceGroupID *string
+	// The ID of the resource group.
+	ResourceGroupID *string `json:"resource_group_id,omitempty"`
 
 	// The unique ID of the offering (service name). This value is provided by and stored in the global catalog.
-	ResourceID *string
+	ResourceID *string `json:"resource_id,omitempty"`
 
-	// Short ID of the binding in the specific targeted environment, for example, service_binding_id in a given IBM Cloud
-	// environment.
-	RegionBindingID *string
+	// The ID of the binding in the target environment. For example, `service_binding_id` in a given IBM Cloud environment.
+	RegionBindingID *string `json:"region_binding_id,omitempty"`
 
 	// Limit on how many items should be returned.
-	Limit *int64
+	Limit *int64 `json:"limit,omitempty"`
 
 	// An optional token that indicates the beginning of the page of results to be returned. Any additional query
 	// parameters are ignored if a page token is present. If omitted, the first page of results is returned. This value is
-	// obtained from the 'next_url' field of the operation response.
-	Start *string
+	// obtained from the 'start' query parameter in the 'next_url' field of the operation response.
+	Start *string `json:"start,omitempty"`
 
 	// Start date inclusive filter.
-	UpdatedFrom *string
+	UpdatedFrom *string `json:"updated_from,omitempty"`
 
 	// End date inclusive filter.
-	UpdatedTo *string
+	UpdatedTo *string `json:"updated_to,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -2890,57 +3038,57 @@ func (*ResourceControllerV2) NewListResourceBindingsOptions() *ListResourceBindi
 }
 
 // SetGUID : Allow user to set GUID
-func (options *ListResourceBindingsOptions) SetGUID(guid string) *ListResourceBindingsOptions {
-	options.GUID = core.StringPtr(guid)
-	return options
+func (_options *ListResourceBindingsOptions) SetGUID(guid string) *ListResourceBindingsOptions {
+	_options.GUID = core.StringPtr(guid)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *ListResourceBindingsOptions) SetName(name string) *ListResourceBindingsOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *ListResourceBindingsOptions) SetName(name string) *ListResourceBindingsOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetResourceGroupID : Allow user to set ResourceGroupID
-func (options *ListResourceBindingsOptions) SetResourceGroupID(resourceGroupID string) *ListResourceBindingsOptions {
-	options.ResourceGroupID = core.StringPtr(resourceGroupID)
-	return options
+func (_options *ListResourceBindingsOptions) SetResourceGroupID(resourceGroupID string) *ListResourceBindingsOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
 }
 
 // SetResourceID : Allow user to set ResourceID
-func (options *ListResourceBindingsOptions) SetResourceID(resourceID string) *ListResourceBindingsOptions {
-	options.ResourceID = core.StringPtr(resourceID)
-	return options
+func (_options *ListResourceBindingsOptions) SetResourceID(resourceID string) *ListResourceBindingsOptions {
+	_options.ResourceID = core.StringPtr(resourceID)
+	return _options
 }
 
 // SetRegionBindingID : Allow user to set RegionBindingID
-func (options *ListResourceBindingsOptions) SetRegionBindingID(regionBindingID string) *ListResourceBindingsOptions {
-	options.RegionBindingID = core.StringPtr(regionBindingID)
-	return options
+func (_options *ListResourceBindingsOptions) SetRegionBindingID(regionBindingID string) *ListResourceBindingsOptions {
+	_options.RegionBindingID = core.StringPtr(regionBindingID)
+	return _options
 }
 
 // SetLimit : Allow user to set Limit
-func (options *ListResourceBindingsOptions) SetLimit(limit int64) *ListResourceBindingsOptions {
-	options.Limit = core.Int64Ptr(limit)
-	return options
+func (_options *ListResourceBindingsOptions) SetLimit(limit int64) *ListResourceBindingsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
 }
 
 // SetStart : Allow user to set Start
-func (options *ListResourceBindingsOptions) SetStart(start string) *ListResourceBindingsOptions {
-	options.Start = core.StringPtr(start)
-	return options
+func (_options *ListResourceBindingsOptions) SetStart(start string) *ListResourceBindingsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
 }
 
 // SetUpdatedFrom : Allow user to set UpdatedFrom
-func (options *ListResourceBindingsOptions) SetUpdatedFrom(updatedFrom string) *ListResourceBindingsOptions {
-	options.UpdatedFrom = core.StringPtr(updatedFrom)
-	return options
+func (_options *ListResourceBindingsOptions) SetUpdatedFrom(updatedFrom string) *ListResourceBindingsOptions {
+	_options.UpdatedFrom = core.StringPtr(updatedFrom)
+	return _options
 }
 
 // SetUpdatedTo : Allow user to set UpdatedTo
-func (options *ListResourceBindingsOptions) SetUpdatedTo(updatedTo string) *ListResourceBindingsOptions {
-	options.UpdatedTo = core.StringPtr(updatedTo)
-	return options
+func (_options *ListResourceBindingsOptions) SetUpdatedTo(updatedTo string) *ListResourceBindingsOptions {
+	_options.UpdatedTo = core.StringPtr(updatedTo)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -2951,45 +3099,43 @@ func (options *ListResourceBindingsOptions) SetHeaders(param map[string]string) 
 
 // ListResourceInstancesOptions : The ListResourceInstances options.
 type ListResourceInstancesOptions struct {
-	// When you provision a new resource in the specified location for the selected plan, a GUID (globally unique
-	// identifier) is created. This is a unique internal GUID managed by Resource controller that corresponds to the
-	// instance.
-	GUID *string
+	// The GUID of the instance.
+	GUID *string `json:"guid,omitempty"`
 
 	// The human-readable name of the instance.
-	Name *string
+	Name *string `json:"name,omitempty"`
 
-	// Short ID of a resource group.
-	ResourceGroupID *string
+	// The ID of the resource group.
+	ResourceGroupID *string `json:"resource_group_id,omitempty"`
 
 	// The unique ID of the offering. This value is provided by and stored in the global catalog.
-	ResourceID *string
+	ResourceID *string `json:"resource_id,omitempty"`
 
 	// The unique ID of the plan associated with the offering. This value is provided by and stored in the global catalog.
-	ResourcePlanID *string
+	ResourcePlanID *string `json:"resource_plan_id,omitempty"`
 
 	// The type of the instance, for example, `service_instance`.
-	Type *string
+	Type *string `json:"type,omitempty"`
 
-	// The sub-type of instance, for example, `cfaas`.
-	SubType *string
+	// The sub-type of instance, for example, `kms`.
+	SubType *string `json:"sub_type,omitempty"`
 
 	// Limit on how many items should be returned.
-	Limit *int64
+	Limit *int64 `json:"limit,omitempty"`
 
 	// An optional token that indicates the beginning of the page of results to be returned. Any additional query
 	// parameters are ignored if a page token is present. If omitted, the first page of results is returned. This value is
-	// obtained from the 'next_url' field of the operation response.
-	Start *string
+	// obtained from the 'start' query parameter in the 'next_url' field of the operation response.
+	Start *string `json:"start,omitempty"`
 
 	// The state of the instance. If not specified, instances in state `active` and `provisioning` are returned.
-	State *string
+	State *string `json:"state,omitempty"`
 
 	// Start date inclusive filter.
-	UpdatedFrom *string
+	UpdatedFrom *string `json:"updated_from,omitempty"`
 
 	// End date inclusive filter.
-	UpdatedTo *string
+	UpdatedTo *string `json:"updated_to,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -3000,9 +3146,13 @@ type ListResourceInstancesOptions struct {
 // Constants associated with the ListResourceInstancesOptions.State property.
 // The state of the instance. If not specified, instances in state `active` and `provisioning` are returned.
 const (
-	ListResourceInstancesOptionsStateActiveConst       = "active"
-	ListResourceInstancesOptionsStateProvisioningConst = "provisioning"
-	ListResourceInstancesOptionsStateRemovedConst      = "removed"
+	ListResourceInstancesOptionsStateActiveConst             = "active"
+	ListResourceInstancesOptionsStateFailedConst             = "failed"
+	ListResourceInstancesOptionsStateInactiveConst           = "inactive"
+	ListResourceInstancesOptionsStatePendingReclamationConst = "pending_reclamation"
+	ListResourceInstancesOptionsStatePreProvisioningConst    = "pre_provisioning"
+	ListResourceInstancesOptionsStateProvisioningConst       = "provisioning"
+	ListResourceInstancesOptionsStateRemovedConst            = "removed"
 )
 
 // NewListResourceInstancesOptions : Instantiate ListResourceInstancesOptions
@@ -3011,75 +3161,75 @@ func (*ResourceControllerV2) NewListResourceInstancesOptions() *ListResourceInst
 }
 
 // SetGUID : Allow user to set GUID
-func (options *ListResourceInstancesOptions) SetGUID(guid string) *ListResourceInstancesOptions {
-	options.GUID = core.StringPtr(guid)
-	return options
+func (_options *ListResourceInstancesOptions) SetGUID(guid string) *ListResourceInstancesOptions {
+	_options.GUID = core.StringPtr(guid)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *ListResourceInstancesOptions) SetName(name string) *ListResourceInstancesOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *ListResourceInstancesOptions) SetName(name string) *ListResourceInstancesOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetResourceGroupID : Allow user to set ResourceGroupID
-func (options *ListResourceInstancesOptions) SetResourceGroupID(resourceGroupID string) *ListResourceInstancesOptions {
-	options.ResourceGroupID = core.StringPtr(resourceGroupID)
-	return options
+func (_options *ListResourceInstancesOptions) SetResourceGroupID(resourceGroupID string) *ListResourceInstancesOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
 }
 
 // SetResourceID : Allow user to set ResourceID
-func (options *ListResourceInstancesOptions) SetResourceID(resourceID string) *ListResourceInstancesOptions {
-	options.ResourceID = core.StringPtr(resourceID)
-	return options
+func (_options *ListResourceInstancesOptions) SetResourceID(resourceID string) *ListResourceInstancesOptions {
+	_options.ResourceID = core.StringPtr(resourceID)
+	return _options
 }
 
 // SetResourcePlanID : Allow user to set ResourcePlanID
-func (options *ListResourceInstancesOptions) SetResourcePlanID(resourcePlanID string) *ListResourceInstancesOptions {
-	options.ResourcePlanID = core.StringPtr(resourcePlanID)
-	return options
+func (_options *ListResourceInstancesOptions) SetResourcePlanID(resourcePlanID string) *ListResourceInstancesOptions {
+	_options.ResourcePlanID = core.StringPtr(resourcePlanID)
+	return _options
 }
 
 // SetType : Allow user to set Type
-func (options *ListResourceInstancesOptions) SetType(typeVar string) *ListResourceInstancesOptions {
-	options.Type = core.StringPtr(typeVar)
-	return options
+func (_options *ListResourceInstancesOptions) SetType(typeVar string) *ListResourceInstancesOptions {
+	_options.Type = core.StringPtr(typeVar)
+	return _options
 }
 
 // SetSubType : Allow user to set SubType
-func (options *ListResourceInstancesOptions) SetSubType(subType string) *ListResourceInstancesOptions {
-	options.SubType = core.StringPtr(subType)
-	return options
+func (_options *ListResourceInstancesOptions) SetSubType(subType string) *ListResourceInstancesOptions {
+	_options.SubType = core.StringPtr(subType)
+	return _options
 }
 
 // SetLimit : Allow user to set Limit
-func (options *ListResourceInstancesOptions) SetLimit(limit int64) *ListResourceInstancesOptions {
-	options.Limit = core.Int64Ptr(limit)
-	return options
+func (_options *ListResourceInstancesOptions) SetLimit(limit int64) *ListResourceInstancesOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
 }
 
 // SetStart : Allow user to set Start
-func (options *ListResourceInstancesOptions) SetStart(start string) *ListResourceInstancesOptions {
-	options.Start = core.StringPtr(start)
-	return options
+func (_options *ListResourceInstancesOptions) SetStart(start string) *ListResourceInstancesOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
 }
 
 // SetState : Allow user to set State
-func (options *ListResourceInstancesOptions) SetState(state string) *ListResourceInstancesOptions {
-	options.State = core.StringPtr(state)
-	return options
+func (_options *ListResourceInstancesOptions) SetState(state string) *ListResourceInstancesOptions {
+	_options.State = core.StringPtr(state)
+	return _options
 }
 
 // SetUpdatedFrom : Allow user to set UpdatedFrom
-func (options *ListResourceInstancesOptions) SetUpdatedFrom(updatedFrom string) *ListResourceInstancesOptions {
-	options.UpdatedFrom = core.StringPtr(updatedFrom)
-	return options
+func (_options *ListResourceInstancesOptions) SetUpdatedFrom(updatedFrom string) *ListResourceInstancesOptions {
+	_options.UpdatedFrom = core.StringPtr(updatedFrom)
+	return _options
 }
 
 // SetUpdatedTo : Allow user to set UpdatedTo
-func (options *ListResourceInstancesOptions) SetUpdatedTo(updatedTo string) *ListResourceInstancesOptions {
-	options.UpdatedTo = core.StringPtr(updatedTo)
-	return options
+func (_options *ListResourceInstancesOptions) SetUpdatedTo(updatedTo string) *ListResourceInstancesOptions {
+	_options.UpdatedTo = core.StringPtr(updatedTo)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -3096,16 +3246,16 @@ func (options *ListResourceInstancesOptions) SetAccountID(account string) *ListR
 
 // ListResourceKeysForInstanceOptions : The ListResourceKeysForInstance options.
 type ListResourceKeysForInstanceOptions struct {
-	// The short or long ID of the instance.
-	ID *string `validate:"required,ne="`
+	// The resource instance URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Limit on how many items should be returned.
-	Limit *int64
+	Limit *int64 `json:"limit,omitempty"`
 
 	// An optional token that indicates the beginning of the page of results to be returned. Any additional query
 	// parameters are ignored if a page token is present. If omitted, the first page of results is returned. This value is
-	// obtained from the 'next_url' field of the operation response.
-	Start *string
+	// obtained from the 'start' query parameter in the 'next_url' field of the operation response.
+	Start *string `json:"start,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -3119,21 +3269,21 @@ func (*ResourceControllerV2) NewListResourceKeysForInstanceOptions(id string) *L
 }
 
 // SetID : Allow user to set ID
-func (options *ListResourceKeysForInstanceOptions) SetID(id string) *ListResourceKeysForInstanceOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *ListResourceKeysForInstanceOptions) SetID(id string) *ListResourceKeysForInstanceOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetLimit : Allow user to set Limit
-func (options *ListResourceKeysForInstanceOptions) SetLimit(limit int64) *ListResourceKeysForInstanceOptions {
-	options.Limit = core.Int64Ptr(limit)
-	return options
+func (_options *ListResourceKeysForInstanceOptions) SetLimit(limit int64) *ListResourceKeysForInstanceOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
 }
 
 // SetStart : Allow user to set Start
-func (options *ListResourceKeysForInstanceOptions) SetStart(start string) *ListResourceKeysForInstanceOptions {
-	options.Start = core.StringPtr(start)
-	return options
+func (_options *ListResourceKeysForInstanceOptions) SetStart(start string) *ListResourceKeysForInstanceOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -3144,32 +3294,31 @@ func (options *ListResourceKeysForInstanceOptions) SetHeaders(param map[string]s
 
 // ListResourceKeysOptions : The ListResourceKeys options.
 type ListResourceKeysOptions struct {
-	// When you create a new key, a GUID (globally unique identifier) is assigned. This is a unique internal GUID managed
-	// by Resource controller that corresponds to the key.
-	GUID *string
+	// The GUID of the key.
+	GUID *string `json:"guid,omitempty"`
 
 	// The human-readable name of the key.
-	Name *string
+	Name *string `json:"name,omitempty"`
 
-	// The short ID of the resource group.
-	ResourceGroupID *string
+	// The ID of the resource group.
+	ResourceGroupID *string `json:"resource_group_id,omitempty"`
 
 	// The unique ID of the offering. This value is provided by and stored in the global catalog.
-	ResourceID *string
+	ResourceID *string `json:"resource_id,omitempty"`
 
 	// Limit on how many items should be returned.
-	Limit *int64
+	Limit *int64 `json:"limit,omitempty"`
 
 	// An optional token that indicates the beginning of the page of results to be returned. Any additional query
 	// parameters are ignored if a page token is present. If omitted, the first page of results is returned. This value is
-	// obtained from the 'next_url' field of the operation response.
-	Start *string
+	// obtained from the 'start' query parameter in the 'next_url' field of the operation response.
+	Start *string `json:"start,omitempty"`
 
 	// Start date inclusive filter.
-	UpdatedFrom *string
+	UpdatedFrom *string `json:"updated_from,omitempty"`
 
 	// End date inclusive filter.
-	UpdatedTo *string
+	UpdatedTo *string `json:"updated_to,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -3181,51 +3330,51 @@ func (*ResourceControllerV2) NewListResourceKeysOptions() *ListResourceKeysOptio
 }
 
 // SetGUID : Allow user to set GUID
-func (options *ListResourceKeysOptions) SetGUID(guid string) *ListResourceKeysOptions {
-	options.GUID = core.StringPtr(guid)
-	return options
+func (_options *ListResourceKeysOptions) SetGUID(guid string) *ListResourceKeysOptions {
+	_options.GUID = core.StringPtr(guid)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *ListResourceKeysOptions) SetName(name string) *ListResourceKeysOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *ListResourceKeysOptions) SetName(name string) *ListResourceKeysOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetResourceGroupID : Allow user to set ResourceGroupID
-func (options *ListResourceKeysOptions) SetResourceGroupID(resourceGroupID string) *ListResourceKeysOptions {
-	options.ResourceGroupID = core.StringPtr(resourceGroupID)
-	return options
+func (_options *ListResourceKeysOptions) SetResourceGroupID(resourceGroupID string) *ListResourceKeysOptions {
+	_options.ResourceGroupID = core.StringPtr(resourceGroupID)
+	return _options
 }
 
 // SetResourceID : Allow user to set ResourceID
-func (options *ListResourceKeysOptions) SetResourceID(resourceID string) *ListResourceKeysOptions {
-	options.ResourceID = core.StringPtr(resourceID)
-	return options
+func (_options *ListResourceKeysOptions) SetResourceID(resourceID string) *ListResourceKeysOptions {
+	_options.ResourceID = core.StringPtr(resourceID)
+	return _options
 }
 
 // SetLimit : Allow user to set Limit
-func (options *ListResourceKeysOptions) SetLimit(limit int64) *ListResourceKeysOptions {
-	options.Limit = core.Int64Ptr(limit)
-	return options
+func (_options *ListResourceKeysOptions) SetLimit(limit int64) *ListResourceKeysOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
 }
 
 // SetStart : Allow user to set Start
-func (options *ListResourceKeysOptions) SetStart(start string) *ListResourceKeysOptions {
-	options.Start = core.StringPtr(start)
-	return options
+func (_options *ListResourceKeysOptions) SetStart(start string) *ListResourceKeysOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
 }
 
 // SetUpdatedFrom : Allow user to set UpdatedFrom
-func (options *ListResourceKeysOptions) SetUpdatedFrom(updatedFrom string) *ListResourceKeysOptions {
-	options.UpdatedFrom = core.StringPtr(updatedFrom)
-	return options
+func (_options *ListResourceKeysOptions) SetUpdatedFrom(updatedFrom string) *ListResourceKeysOptions {
+	_options.UpdatedFrom = core.StringPtr(updatedFrom)
+	return _options
 }
 
 // SetUpdatedTo : Allow user to set UpdatedTo
-func (options *ListResourceKeysOptions) SetUpdatedTo(updatedTo string) *ListResourceKeysOptions {
-	options.UpdatedTo = core.StringPtr(updatedTo)
-	return options
+func (_options *ListResourceKeysOptions) SetUpdatedTo(updatedTo string) *ListResourceKeysOptions {
+	_options.UpdatedTo = core.StringPtr(updatedTo)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -3236,8 +3385,8 @@ func (options *ListResourceKeysOptions) SetHeaders(param map[string]string) *Lis
 
 // LockResourceInstanceOptions : The LockResourceInstance options.
 type LockResourceInstanceOptions struct {
-	// The short or long ID of the instance.
-	ID *string `validate:"required,ne="`
+	// The resource instance URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -3251,9 +3400,9 @@ func (*ResourceControllerV2) NewLockResourceInstanceOptions(id string) *LockReso
 }
 
 // SetID : Allow user to set ID
-func (options *LockResourceInstanceOptions) SetID(id string) *LockResourceInstanceOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *LockResourceInstanceOptions) SetID(id string) *LockResourceInstanceOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -3298,26 +3447,26 @@ type Reclamation struct {
 	// The ID associated with the reclamation.
 	ID *string `json:"id,omitempty"`
 
-	// The short ID of the entity for the reclamation.
+	// The ID of the entity for the reclamation.
 	EntityID *string `json:"entity_id,omitempty"`
 
-	// The short ID of the entity type for the reclamation.
+	// The ID of the entity type for the reclamation.
 	EntityTypeID *string `json:"entity_type_id,omitempty"`
 
 	// The full Cloud Resource Name (CRN) associated with the binding. For more information about this format, see [Cloud
 	// Resource Names](https://cloud.ibm.com/docs/overview?topic=overview-crn).
 	EntityCRN *string `json:"entity_crn,omitempty"`
 
-	// The short ID of the resource instance.
+	// The ID of the resource instance.
 	ResourceInstanceID *string `json:"resource_instance_id,omitempty"`
 
-	// The short ID of the resource group.
+	// The ID of the resource group.
 	ResourceGroupID *string `json:"resource_group_id,omitempty"`
 
 	// An alpha-numeric value identifying the account ID.
 	AccountID *string `json:"account_id,omitempty"`
 
-	// The short ID of policy for the reclamation.
+	// The ID of policy for the reclamation.
 	PolicyID *string `json:"policy_id,omitempty"`
 
 	// The state of the reclamation.
@@ -3431,8 +3580,7 @@ type ResourceAlias struct {
 	// The ID associated with the alias.
 	ID *string `json:"id,omitempty"`
 
-	// When you create a new alias, a globally unique identifier (GUID) is assigned. This GUID is a unique internal
-	// indentifier managed by the resource controller that corresponds to the alias.
+	// The GUID of the alias.
 	GUID *string `json:"guid,omitempty"`
 
 	// When you created a new alias, a relative URL path is created identifying the location of the alias.
@@ -3478,11 +3626,11 @@ type ResourceAlias struct {
 	// Names](https://cloud.ibm.com/docs/overview?topic=overview-crn).
 	CRN *string `json:"crn,omitempty"`
 
-	// The ID of the instance in the specific target environment, for example, `service_instance_id` in a given IBM Cloud
+	// The ID of the instance in the target environment. For example, `service_instance_id` in a given IBM Cloud
 	// environment.
 	RegionInstanceID *string `json:"region_instance_id,omitempty"`
 
-	// The CRN of the instance in the specific target environment.
+	// The CRN of the instance in the target environment.
 	RegionInstanceCRN *string `json:"region_instance_crn,omitempty"`
 
 	// The state of the alias.
@@ -3631,13 +3779,24 @@ func UnmarshalResourceAliasesList(m map[string]json.RawMessage, result interface
 	return
 }
 
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *ResourceAliasesList) GetNextStart() (*string, error) {
+	if core.IsNil(resp.NextURL) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.NextURL, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
 // ResourceBinding : A resource binding.
 type ResourceBinding struct {
 	// The ID associated with the binding.
 	ID *string `json:"id,omitempty"`
 
-	// When you create a new binding, a globally unique identifier (GUID) is assigned. This GUID is a unique internal
-	// identifier managed by the resource controller that corresponds to the binding.
+	// The GUID of the binding.
 	GUID *string `json:"guid,omitempty"`
 
 	// When you provision a new binding, a relative URL path is created identifying the location of the binding.
@@ -3671,11 +3830,10 @@ type ResourceBinding struct {
 	// Resource Names](https://cloud.ibm.com/docs/overview?topic=overview-crn).
 	CRN *string `json:"crn,omitempty"`
 
-	// The ID of the binding in the specific target environment, for example, `service_binding_id` in a given IBM Cloud
-	// environment.
+	// The ID of the binding in the target environment. For example, `service_binding_id` in a given IBM Cloud environment.
 	RegionBindingID *string `json:"region_binding_id,omitempty"`
 
-	// The CRN of the binding in the specific target environment.
+	// The CRN of the binding in the target environment.
 	RegionBindingCRN *string `json:"region_binding_crn,omitempty"`
 
 	// The human-readable name of the binding.
@@ -3690,8 +3848,12 @@ type ResourceBinding struct {
 	// The state of the binding.
 	State *string `json:"state,omitempty"`
 
-	// The credentials for the binding. Additional key-value pairs are passed through from the resource brokers.  For
-	// additional details, see the service’s documentation.
+	// The credentials for the binding. Additional key-value pairs are passed through from the resource brokers. After a
+	// credential is created for a service, it can be viewed at any time for users that need the API key value. However,
+	// all users must have the correct level of access to see the details of a credential that includes the API key value.
+	// For additional details, see [viewing a
+	// credential](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui#viewing-credentials-ui)
+	// or the service’s documentation.
 	Credentials *Credentials `json:"credentials,omitempty"`
 
 	// Specifies whether the binding’s credentials support IAM.
@@ -3824,6 +3986,14 @@ func (o *ResourceBindingPostParameters) SetProperty(key string, value interface{
 	o.additionalProperties[key] = value
 }
 
+// SetProperties allows the user to set a map of arbitrary properties on an instance of ResourceBindingPostParameters
+func (o *ResourceBindingPostParameters) SetProperties(m map[string]interface{}) {
+	o.additionalProperties = make(map[string]interface{})
+	for k, v := range m {
+		o.additionalProperties[k] = v
+	}
+}
+
 // GetProperty allows the user to retrieve an arbitrary property from an instance of ResourceBindingPostParameters
 func (o *ResourceBindingPostParameters) GetProperty(key string) interface{} {
 	return o.additionalProperties[key]
@@ -3901,13 +4071,24 @@ func UnmarshalResourceBindingsList(m map[string]json.RawMessage, result interfac
 	return
 }
 
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *ResourceBindingsList) GetNextStart() (*string, error) {
+	if core.IsNil(resp.NextURL) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.NextURL, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
 // ResourceInstance : A resource instance.
 type ResourceInstance struct {
 	// The ID associated with the instance.
 	ID *string `json:"id,omitempty"`
 
-	// When you create a new resource, a globally unique identifier (GUID) is assigned. This GUID is a unique internal
-	// identifier managed by the resource controller that corresponds to the instance.
+	// The GUID of the instance.
 	GUID *string `json:"guid,omitempty"`
 
 	// When you provision a new resource, a relative URL path is created identifying the location of the instance.
@@ -3995,7 +4176,7 @@ type ResourceInstance struct {
 	DashboardURL *string `json:"dashboard_url,omitempty"`
 
 	// The status of the last operation requested on the instance.
-	LastOperation map[string]interface{} `json:"last_operation,omitempty"`
+	LastOperation *ResourceInstanceLastOperation `json:"last_operation,omitempty"`
 
 	// The relative path to the resource aliases for the instance.
 	ResourceAliasesURL *string `json:"resource_aliases_url,omitempty"`
@@ -4021,6 +4202,19 @@ type ResourceInstance struct {
 	// A boolean that dictates if the resource instance is locked or not.
 	Locked *bool `json:"locked,omitempty"`
 }
+
+// Constants associated with the ResourceInstance.State property.
+// The current state of the instance. For example, if the instance is deleted, it will return removed.
+const (
+	ResourceInstanceStateActiveConst             = "active"
+	ResourceInstanceStateFailedConst             = "failed"
+	ResourceInstanceStateInactiveConst           = "inactive"
+	ResourceInstanceStatePendingReclamationConst = "pending_reclamation"
+	ResourceInstanceStatePendingRemovalConst     = "pending_removal"
+	ResourceInstanceStatePreProvisioningConst    = "pre_provisioning"
+	ResourceInstanceStateProvisioningConst       = "provisioning"
+	ResourceInstanceStateRemovedConst            = "removed"
+)
 
 // UnmarshalResourceInstance unmarshals an instance of ResourceInstance from the specified map of raw messages.
 func UnmarshalResourceInstance(m map[string]json.RawMessage, result interface{}) (err error) {
@@ -4141,7 +4335,7 @@ func UnmarshalResourceInstance(m map[string]json.RawMessage, result interface{})
 	if err != nil {
 		return
 	}
-	err = core.UnmarshalPrimitive(m, "last_operation", &obj.LastOperation)
+	err = core.UnmarshalModel(m, "last_operation", &obj.LastOperation, UnmarshalResourceInstanceLastOperation)
 	if err != nil {
 		return
 	}
@@ -4181,6 +4375,175 @@ func UnmarshalResourceInstance(m map[string]json.RawMessage, result interface{})
 	return
 }
 
+// ResourceInstanceLastOperation : The status of the last operation requested on the instance.
+type ResourceInstanceLastOperation struct {
+	// The last operation type of the resource instance.
+	Type *string `json:"type" validate:"required"`
+
+	// The last operation state of the resoure instance. This indicates if the resource's last operation is in progress,
+	// succeeded or failed.
+	State *string `json:"state" validate:"required"`
+
+	// The last operation sub type of the resoure instance.
+	SubType *string `json:"sub_type,omitempty"`
+
+	// A boolean that indicates if the resource is provisioned asynchronously or not.
+	Async *bool `json:"async" validate:"required"`
+
+	// The description of the status of last operation.
+	Description *string `json:"description" validate:"required"`
+
+	// Optional string that states the reason code for the last operation state change.
+	ReasonCode *string `json:"reason_code,omitempty"`
+
+	// A field which indicates the time after which the instance's last operation is to be polled.
+	PollAfter *float64 `json:"poll_after,omitempty"`
+
+	// A boolean that indicates if the resource's last operation is cancelable or not.
+	Cancelable *bool `json:"cancelable" validate:"required"`
+
+	// A boolean that indicates if the resource broker's last operation can be polled or not.
+	Poll *bool `json:"poll" validate:"required"`
+
+	// Allows users to set arbitrary properties
+	additionalProperties map[string]interface{}
+}
+
+// Constants associated with the ResourceInstanceLastOperation.State property.
+// The last operation state of the resoure instance. This indicates if the resource's last operation is in progress,
+// succeeded or failed.
+const (
+	ResourceInstanceLastOperationStateFailedConst     = "failed"
+	ResourceInstanceLastOperationStateInProgressConst = "in progress"
+	ResourceInstanceLastOperationStateSucceededConst  = "succeeded"
+)
+
+// SetProperty allows the user to set an arbitrary property on an instance of ResourceInstanceLastOperation
+func (o *ResourceInstanceLastOperation) SetProperty(key string, value interface{}) {
+	if o.additionalProperties == nil {
+		o.additionalProperties = make(map[string]interface{})
+	}
+	o.additionalProperties[key] = value
+}
+
+// SetProperties allows the user to set a map of arbitrary properties on an instance of ResourceInstanceLastOperation
+func (o *ResourceInstanceLastOperation) SetProperties(m map[string]interface{}) {
+	o.additionalProperties = make(map[string]interface{})
+	for k, v := range m {
+		o.additionalProperties[k] = v
+	}
+}
+
+// GetProperty allows the user to retrieve an arbitrary property from an instance of ResourceInstanceLastOperation
+func (o *ResourceInstanceLastOperation) GetProperty(key string) interface{} {
+	return o.additionalProperties[key]
+}
+
+// GetProperties allows the user to retrieve the map of arbitrary properties from an instance of ResourceInstanceLastOperation
+func (o *ResourceInstanceLastOperation) GetProperties() map[string]interface{} {
+	return o.additionalProperties
+}
+
+// MarshalJSON performs custom serialization for instances of ResourceInstanceLastOperation
+func (o *ResourceInstanceLastOperation) MarshalJSON() (buffer []byte, err error) {
+	m := make(map[string]interface{})
+	if len(o.additionalProperties) > 0 {
+		for k, v := range o.additionalProperties {
+			m[k] = v
+		}
+	}
+	if o.Type != nil {
+		m["type"] = o.Type
+	}
+	if o.State != nil {
+		m["state"] = o.State
+	}
+	if o.SubType != nil {
+		m["sub_type"] = o.SubType
+	}
+	if o.Async != nil {
+		m["async"] = o.Async
+	}
+	if o.Description != nil {
+		m["description"] = o.Description
+	}
+	if o.ReasonCode != nil {
+		m["reason_code"] = o.ReasonCode
+	}
+	if o.PollAfter != nil {
+		m["poll_after"] = o.PollAfter
+	}
+	if o.Cancelable != nil {
+		m["cancelable"] = o.Cancelable
+	}
+	if o.Poll != nil {
+		m["poll"] = o.Poll
+	}
+	buffer, err = json.Marshal(m)
+	return
+}
+
+// UnmarshalResourceInstanceLastOperation unmarshals an instance of ResourceInstanceLastOperation from the specified map of raw messages.
+func UnmarshalResourceInstanceLastOperation(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(ResourceInstanceLastOperation)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		return
+	}
+	delete(m, "type")
+	err = core.UnmarshalPrimitive(m, "state", &obj.State)
+	if err != nil {
+		return
+	}
+	delete(m, "state")
+	err = core.UnmarshalPrimitive(m, "sub_type", &obj.SubType)
+	if err != nil {
+		return
+	}
+	delete(m, "sub_type")
+	err = core.UnmarshalPrimitive(m, "async", &obj.Async)
+	if err != nil {
+		return
+	}
+	delete(m, "async")
+	err = core.UnmarshalPrimitive(m, "description", &obj.Description)
+	if err != nil {
+		return
+	}
+	delete(m, "description")
+	err = core.UnmarshalPrimitive(m, "reason_code", &obj.ReasonCode)
+	if err != nil {
+		return
+	}
+	delete(m, "reason_code")
+	err = core.UnmarshalPrimitive(m, "poll_after", &obj.PollAfter)
+	if err != nil {
+		return
+	}
+	delete(m, "poll_after")
+	err = core.UnmarshalPrimitive(m, "cancelable", &obj.Cancelable)
+	if err != nil {
+		return
+	}
+	delete(m, "cancelable")
+	err = core.UnmarshalPrimitive(m, "poll", &obj.Poll)
+	if err != nil {
+		return
+	}
+	delete(m, "poll")
+	for k := range m {
+		var v interface{}
+		e := core.UnmarshalPrimitive(m, k, &v)
+		if e != nil {
+			err = e
+			return
+		}
+		obj.SetProperty(k, v)
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // ResourceInstancesList : A list of resource instances.
 type ResourceInstancesList struct {
 	// The number of resource instances in `resources`.
@@ -4212,13 +4575,24 @@ func UnmarshalResourceInstancesList(m map[string]json.RawMessage, result interfa
 	return
 }
 
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *ResourceInstancesList) GetNextStart() (*string, error) {
+	if core.IsNil(resp.NextURL) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.NextURL, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
 // ResourceKey : A resource key.
 type ResourceKey struct {
 	// The ID associated with the key.
 	ID *string `json:"id,omitempty"`
 
-	// When you create a new key, a globally unique identifier (GUID) is assigned. This GUID is a unique internal
-	// identifier managed by the resource controller that corresponds to the key.
+	// The GUID of the key.
 	GUID *string `json:"guid,omitempty"`
 
 	// When you created a new key, a relative URL path is created identifying the location of the key.
@@ -4264,8 +4638,12 @@ type ResourceKey struct {
 	// The unique ID of the offering. This value is provided by and stored in the global catalog.
 	ResourceID *string `json:"resource_id,omitempty"`
 
-	// The credentials for the key. Additional key-value pairs are passed through from the resource brokers.  Refer to
-	// service’s documentation for additional details.
+	// The credentials for the key. Additional key-value pairs are passed through from the resource brokers. After a
+	// credential is created for a service, it can be viewed at any time for users that need the API key value. However,
+	// all users must have the correct level of access to see the details of a credential that includes the API key value.
+	// For additional details, see [viewing a
+	// credential](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui#viewing-credentials-ui)
+	// or the service’s documentation.
 	Credentials *Credentials `json:"credentials,omitempty"`
 
 	// Specifies whether the key’s credentials support IAM.
@@ -4390,6 +4768,14 @@ func (o *ResourceKeyPostParameters) SetProperty(key string, value interface{}) {
 	o.additionalProperties[key] = value
 }
 
+// SetProperties allows the user to set a map of arbitrary properties on an instance of ResourceKeyPostParameters
+func (o *ResourceKeyPostParameters) SetProperties(m map[string]interface{}) {
+	o.additionalProperties = make(map[string]interface{})
+	for k, v := range m {
+		o.additionalProperties[k] = v
+	}
+}
+
 // GetProperty allows the user to retrieve an arbitrary property from an instance of ResourceKeyPostParameters
 func (o *ResourceKeyPostParameters) GetProperty(key string) interface{} {
 	return o.additionalProperties[key]
@@ -4467,19 +4853,31 @@ func UnmarshalResourceKeysList(m map[string]json.RawMessage, result interface{})
 	return
 }
 
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *ResourceKeysList) GetNextStart() (*string, error) {
+	if core.IsNil(resp.NextURL) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.NextURL, "start")
+	if err != nil || start == nil {
+		return nil, err
+	}
+	return start, nil
+}
+
 // RunReclamationActionOptions : The RunReclamationAction options.
 type RunReclamationActionOptions struct {
 	// The ID associated with the reclamation.
-	ID *string `validate:"required,ne="`
+	ID *string `json:"id" validate:"required,ne="`
 
 	// The reclamation action name. Specify `reclaim` to delete a resource, or `restore` to restore a resource.
-	ActionName *string `validate:"required,ne="`
+	ActionName *string `json:"action_name" validate:"required,ne="`
 
 	// The request initiator, if different from the request token.
-	RequestBy *string
+	RequestBy *string `json:"request_by,omitempty"`
 
 	// A comment to describe the action.
-	Comment *string
+	Comment *string `json:"comment,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -4494,27 +4892,27 @@ func (*ResourceControllerV2) NewRunReclamationActionOptions(id string, actionNam
 }
 
 // SetID : Allow user to set ID
-func (options *RunReclamationActionOptions) SetID(id string) *RunReclamationActionOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *RunReclamationActionOptions) SetID(id string) *RunReclamationActionOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetActionName : Allow user to set ActionName
-func (options *RunReclamationActionOptions) SetActionName(actionName string) *RunReclamationActionOptions {
-	options.ActionName = core.StringPtr(actionName)
-	return options
+func (_options *RunReclamationActionOptions) SetActionName(actionName string) *RunReclamationActionOptions {
+	_options.ActionName = core.StringPtr(actionName)
+	return _options
 }
 
 // SetRequestBy : Allow user to set RequestBy
-func (options *RunReclamationActionOptions) SetRequestBy(requestBy string) *RunReclamationActionOptions {
-	options.RequestBy = core.StringPtr(requestBy)
-	return options
+func (_options *RunReclamationActionOptions) SetRequestBy(requestBy string) *RunReclamationActionOptions {
+	_options.RequestBy = core.StringPtr(requestBy)
+	return _options
 }
 
 // SetComment : Allow user to set Comment
-func (options *RunReclamationActionOptions) SetComment(comment string) *RunReclamationActionOptions {
-	options.Comment = core.StringPtr(comment)
-	return options
+func (_options *RunReclamationActionOptions) SetComment(comment string) *RunReclamationActionOptions {
+	_options.Comment = core.StringPtr(comment)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -4525,8 +4923,8 @@ func (options *RunReclamationActionOptions) SetHeaders(param map[string]string) 
 
 // UnlockResourceInstanceOptions : The UnlockResourceInstance options.
 type UnlockResourceInstanceOptions struct {
-	// The short or long ID of the instance.
-	ID *string `validate:"required,ne="`
+	// The resource instance URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -4540,9 +4938,9 @@ func (*ResourceControllerV2) NewUnlockResourceInstanceOptions(id string) *Unlock
 }
 
 // SetID : Allow user to set ID
-func (options *UnlockResourceInstanceOptions) SetID(id string) *UnlockResourceInstanceOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *UnlockResourceInstanceOptions) SetID(id string) *UnlockResourceInstanceOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -4553,12 +4951,12 @@ func (options *UnlockResourceInstanceOptions) SetHeaders(param map[string]string
 
 // UpdateResourceAliasOptions : The UpdateResourceAlias options.
 type UpdateResourceAliasOptions struct {
-	// The short or long ID of the alias.
-	ID *string `validate:"required,ne="`
+	// The resource alias URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// The new name of the alias. Must be 180 characters or less and cannot include any special characters other than
 	// `(space) - . _ :`.
-	Name *string `validate:"required"`
+	Name *string `json:"name" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -4573,15 +4971,15 @@ func (*ResourceControllerV2) NewUpdateResourceAliasOptions(id string, name strin
 }
 
 // SetID : Allow user to set ID
-func (options *UpdateResourceAliasOptions) SetID(id string) *UpdateResourceAliasOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *UpdateResourceAliasOptions) SetID(id string) *UpdateResourceAliasOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *UpdateResourceAliasOptions) SetName(name string) *UpdateResourceAliasOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *UpdateResourceAliasOptions) SetName(name string) *UpdateResourceAliasOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -4592,12 +4990,12 @@ func (options *UpdateResourceAliasOptions) SetHeaders(param map[string]string) *
 
 // UpdateResourceBindingOptions : The UpdateResourceBinding options.
 type UpdateResourceBindingOptions struct {
-	// The short or long ID of the binding.
-	ID *string `validate:"required,ne="`
+	// The resource binding URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// The new name of the binding. Must be 180 characters or less and cannot include any special characters other than
 	// `(space) - . _ :`.
-	Name *string `validate:"required"`
+	Name *string `json:"name" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -4612,15 +5010,15 @@ func (*ResourceControllerV2) NewUpdateResourceBindingOptions(id string, name str
 }
 
 // SetID : Allow user to set ID
-func (options *UpdateResourceBindingOptions) SetID(id string) *UpdateResourceBindingOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *UpdateResourceBindingOptions) SetID(id string) *UpdateResourceBindingOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *UpdateResourceBindingOptions) SetName(name string) *UpdateResourceBindingOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *UpdateResourceBindingOptions) SetName(name string) *UpdateResourceBindingOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -4631,22 +5029,22 @@ func (options *UpdateResourceBindingOptions) SetHeaders(param map[string]string)
 
 // UpdateResourceInstanceOptions : The UpdateResourceInstance options.
 type UpdateResourceInstanceOptions struct {
-	// The short or long ID of the instance.
-	ID *string `validate:"required,ne="`
+	// The resource instance URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// The new name of the instance. Must be 180 characters or less and cannot include any special characters other than
 	// `(space) - . _ :`.
-	Name *string
+	Name *string `json:"name,omitempty"`
 
 	// The new configuration options for the instance.
-	Parameters map[string]interface{}
+	Parameters map[string]interface{} `json:"parameters,omitempty"`
 
 	// The unique ID of the plan associated with the offering. This value is provided by and stored in the global catalog.
-	ResourcePlanID *string
+	ResourcePlanID *string `json:"resource_plan_id,omitempty"`
 
 	// A boolean that dictates if the resource instance should be deleted (cleaned up) during the processing of a region
 	// instance delete call.
-	AllowCleanup *bool
+	AllowCleanup *bool `json:"allow_cleanup,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -4660,33 +5058,33 @@ func (*ResourceControllerV2) NewUpdateResourceInstanceOptions(id string) *Update
 }
 
 // SetID : Allow user to set ID
-func (options *UpdateResourceInstanceOptions) SetID(id string) *UpdateResourceInstanceOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *UpdateResourceInstanceOptions) SetID(id string) *UpdateResourceInstanceOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *UpdateResourceInstanceOptions) SetName(name string) *UpdateResourceInstanceOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *UpdateResourceInstanceOptions) SetName(name string) *UpdateResourceInstanceOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetParameters : Allow user to set Parameters
-func (options *UpdateResourceInstanceOptions) SetParameters(parameters map[string]interface{}) *UpdateResourceInstanceOptions {
-	options.Parameters = parameters
-	return options
+func (_options *UpdateResourceInstanceOptions) SetParameters(parameters map[string]interface{}) *UpdateResourceInstanceOptions {
+	_options.Parameters = parameters
+	return _options
 }
 
 // SetResourcePlanID : Allow user to set ResourcePlanID
-func (options *UpdateResourceInstanceOptions) SetResourcePlanID(resourcePlanID string) *UpdateResourceInstanceOptions {
-	options.ResourcePlanID = core.StringPtr(resourcePlanID)
-	return options
+func (_options *UpdateResourceInstanceOptions) SetResourcePlanID(resourcePlanID string) *UpdateResourceInstanceOptions {
+	_options.ResourcePlanID = core.StringPtr(resourcePlanID)
+	return _options
 }
 
 // SetAllowCleanup : Allow user to set AllowCleanup
-func (options *UpdateResourceInstanceOptions) SetAllowCleanup(allowCleanup bool) *UpdateResourceInstanceOptions {
-	options.AllowCleanup = core.BoolPtr(allowCleanup)
-	return options
+func (_options *UpdateResourceInstanceOptions) SetAllowCleanup(allowCleanup bool) *UpdateResourceInstanceOptions {
+	_options.AllowCleanup = core.BoolPtr(allowCleanup)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -4697,12 +5095,12 @@ func (options *UpdateResourceInstanceOptions) SetHeaders(param map[string]string
 
 // UpdateResourceKeyOptions : The UpdateResourceKey options.
 type UpdateResourceKeyOptions struct {
-	// The short or long ID of the key.
-	ID *string `validate:"required,ne="`
+	// The resource key URL-encoded CRN or GUID.
+	ID *string `json:"id" validate:"required,ne="`
 
 	// The new name of the key. Must be 180 characters or less and cannot include any special characters other than
 	// `(space) - . _ :`.
-	Name *string `validate:"required"`
+	Name *string `json:"name" validate:"required"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -4717,19 +5115,614 @@ func (*ResourceControllerV2) NewUpdateResourceKeyOptions(id string, name string)
 }
 
 // SetID : Allow user to set ID
-func (options *UpdateResourceKeyOptions) SetID(id string) *UpdateResourceKeyOptions {
-	options.ID = core.StringPtr(id)
-	return options
+func (_options *UpdateResourceKeyOptions) SetID(id string) *UpdateResourceKeyOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
 }
 
 // SetName : Allow user to set Name
-func (options *UpdateResourceKeyOptions) SetName(name string) *UpdateResourceKeyOptions {
-	options.Name = core.StringPtr(name)
-	return options
+func (_options *UpdateResourceKeyOptions) SetName(name string) *UpdateResourceKeyOptions {
+	_options.Name = core.StringPtr(name)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
 func (options *UpdateResourceKeyOptions) SetHeaders(param map[string]string) *UpdateResourceKeyOptions {
 	options.Headers = param
 	return options
+}
+
+// ResourceInstancesPager can be used to simplify the use of the "ListResourceInstances" method.
+type ResourceInstancesPager struct {
+	hasNext     bool
+	options     *ListResourceInstancesOptions
+	client      *ResourceControllerV2
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewResourceInstancesPager returns a new ResourceInstancesPager instance.
+func (resourceController *ResourceControllerV2) NewResourceInstancesPager(options *ListResourceInstancesOptions) (pager *ResourceInstancesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListResourceInstancesOptions = *options
+	pager = &ResourceInstancesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  resourceController,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ResourceInstancesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ResourceInstancesPager) GetNextWithContext(ctx context.Context) (page []ResourceInstance, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListResourceInstancesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.NextURL != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.NextURL, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.NextURL, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Resources
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ResourceInstancesPager) GetAllWithContext(ctx context.Context) (allItems []ResourceInstance, err error) {
+	for pager.HasNext() {
+		var nextPage []ResourceInstance
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceInstancesPager) GetNext() (page []ResourceInstance, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceInstancesPager) GetAll() (allItems []ResourceInstance, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// ResourceAliasesForInstancePager can be used to simplify the use of the "ListResourceAliasesForInstance" method.
+type ResourceAliasesForInstancePager struct {
+	hasNext     bool
+	options     *ListResourceAliasesForInstanceOptions
+	client      *ResourceControllerV2
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewResourceAliasesForInstancePager returns a new ResourceAliasesForInstancePager instance.
+func (resourceController *ResourceControllerV2) NewResourceAliasesForInstancePager(options *ListResourceAliasesForInstanceOptions) (pager *ResourceAliasesForInstancePager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListResourceAliasesForInstanceOptions = *options
+	pager = &ResourceAliasesForInstancePager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  resourceController,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ResourceAliasesForInstancePager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ResourceAliasesForInstancePager) GetNextWithContext(ctx context.Context) (page []ResourceAlias, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListResourceAliasesForInstanceWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.NextURL != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.NextURL, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.NextURL, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Resources
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ResourceAliasesForInstancePager) GetAllWithContext(ctx context.Context) (allItems []ResourceAlias, err error) {
+	for pager.HasNext() {
+		var nextPage []ResourceAlias
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceAliasesForInstancePager) GetNext() (page []ResourceAlias, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceAliasesForInstancePager) GetAll() (allItems []ResourceAlias, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// ResourceKeysForInstancePager can be used to simplify the use of the "ListResourceKeysForInstance" method.
+type ResourceKeysForInstancePager struct {
+	hasNext     bool
+	options     *ListResourceKeysForInstanceOptions
+	client      *ResourceControllerV2
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewResourceKeysForInstancePager returns a new ResourceKeysForInstancePager instance.
+func (resourceController *ResourceControllerV2) NewResourceKeysForInstancePager(options *ListResourceKeysForInstanceOptions) (pager *ResourceKeysForInstancePager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListResourceKeysForInstanceOptions = *options
+	pager = &ResourceKeysForInstancePager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  resourceController,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ResourceKeysForInstancePager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ResourceKeysForInstancePager) GetNextWithContext(ctx context.Context) (page []ResourceKey, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListResourceKeysForInstanceWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.NextURL != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.NextURL, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.NextURL, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Resources
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ResourceKeysForInstancePager) GetAllWithContext(ctx context.Context) (allItems []ResourceKey, err error) {
+	for pager.HasNext() {
+		var nextPage []ResourceKey
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceKeysForInstancePager) GetNext() (page []ResourceKey, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceKeysForInstancePager) GetAll() (allItems []ResourceKey, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// ResourceKeysPager can be used to simplify the use of the "ListResourceKeys" method.
+type ResourceKeysPager struct {
+	hasNext     bool
+	options     *ListResourceKeysOptions
+	client      *ResourceControllerV2
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewResourceKeysPager returns a new ResourceKeysPager instance.
+func (resourceController *ResourceControllerV2) NewResourceKeysPager(options *ListResourceKeysOptions) (pager *ResourceKeysPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListResourceKeysOptions = *options
+	pager = &ResourceKeysPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  resourceController,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ResourceKeysPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ResourceKeysPager) GetNextWithContext(ctx context.Context) (page []ResourceKey, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListResourceKeysWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.NextURL != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.NextURL, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.NextURL, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Resources
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ResourceKeysPager) GetAllWithContext(ctx context.Context) (allItems []ResourceKey, err error) {
+	for pager.HasNext() {
+		var nextPage []ResourceKey
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceKeysPager) GetNext() (page []ResourceKey, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceKeysPager) GetAll() (allItems []ResourceKey, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// ResourceBindingsPager can be used to simplify the use of the "ListResourceBindings" method.
+type ResourceBindingsPager struct {
+	hasNext     bool
+	options     *ListResourceBindingsOptions
+	client      *ResourceControllerV2
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewResourceBindingsPager returns a new ResourceBindingsPager instance.
+func (resourceController *ResourceControllerV2) NewResourceBindingsPager(options *ListResourceBindingsOptions) (pager *ResourceBindingsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListResourceBindingsOptions = *options
+	pager = &ResourceBindingsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  resourceController,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ResourceBindingsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ResourceBindingsPager) GetNextWithContext(ctx context.Context) (page []ResourceBinding, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListResourceBindingsWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.NextURL != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.NextURL, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.NextURL, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Resources
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ResourceBindingsPager) GetAllWithContext(ctx context.Context) (allItems []ResourceBinding, err error) {
+	for pager.HasNext() {
+		var nextPage []ResourceBinding
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceBindingsPager) GetNext() (page []ResourceBinding, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceBindingsPager) GetAll() (allItems []ResourceBinding, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// ResourceAliasesPager can be used to simplify the use of the "ListResourceAliases" method.
+type ResourceAliasesPager struct {
+	hasNext     bool
+	options     *ListResourceAliasesOptions
+	client      *ResourceControllerV2
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewResourceAliasesPager returns a new ResourceAliasesPager instance.
+func (resourceController *ResourceControllerV2) NewResourceAliasesPager(options *ListResourceAliasesOptions) (pager *ResourceAliasesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListResourceAliasesOptions = *options
+	pager = &ResourceAliasesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  resourceController,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ResourceAliasesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ResourceAliasesPager) GetNextWithContext(ctx context.Context) (page []ResourceAlias, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListResourceAliasesWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.NextURL != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.NextURL, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.NextURL, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Resources
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ResourceAliasesPager) GetAllWithContext(ctx context.Context) (allItems []ResourceAlias, err error) {
+	for pager.HasNext() {
+		var nextPage []ResourceAlias
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceAliasesPager) GetNext() (page []ResourceAlias, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceAliasesPager) GetAll() (allItems []ResourceAlias, err error) {
+	return pager.GetAllWithContext(context.Background())
+}
+
+// ResourceBindingsForAliasPager can be used to simplify the use of the "ListResourceBindingsForAlias" method.
+type ResourceBindingsForAliasPager struct {
+	hasNext     bool
+	options     *ListResourceBindingsForAliasOptions
+	client      *ResourceControllerV2
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewResourceBindingsForAliasPager returns a new ResourceBindingsForAliasPager instance.
+func (resourceController *ResourceControllerV2) NewResourceBindingsForAliasPager(options *ListResourceBindingsForAliasOptions) (pager *ResourceBindingsForAliasPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = fmt.Errorf("the 'options.Start' field should not be set")
+		return
+	}
+
+	var optionsCopy ListResourceBindingsForAliasOptions = *options
+	pager = &ResourceBindingsForAliasPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  resourceController,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *ResourceBindingsForAliasPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *ResourceBindingsForAliasPager) GetNextWithContext(ctx context.Context) (page []ResourceBinding, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListResourceBindingsForAliasWithContext(ctx, pager.options)
+	if err != nil {
+		return
+	}
+
+	var next *string
+	if result.NextURL != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.NextURL, "start")
+		if err != nil {
+			err = fmt.Errorf("error retrieving 'start' query parameter from URL '%s': %s", *result.NextURL, err.Error())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Resources
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *ResourceBindingsForAliasPager) GetAllWithContext(ctx context.Context) (allItems []ResourceBinding, err error) {
+	for pager.HasNext() {
+		var nextPage []ResourceBinding
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceBindingsForAliasPager) GetNext() (page []ResourceBinding, err error) {
+	return pager.GetNextWithContext(context.Background())
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *ResourceBindingsForAliasPager) GetAll() (allItems []ResourceBinding, err error) {
+	return pager.GetAllWithContext(context.Background())
 }

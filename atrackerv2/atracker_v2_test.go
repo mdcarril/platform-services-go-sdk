@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2022.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -187,12 +186,68 @@ var _ = Describe(`AtrackerV2`, func() {
 			Expect(url).To(Equal("https://private.eu-gb.atracker.cloud.ibm.com"))
 			Expect(err).To(BeNil())
 
+			url, err = atrackerv2.GetServiceURLForRegion("eu-es")
+			Expect(url).To(Equal("https://eu-es.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("private.eu-es")
+			Expect(url).To(Equal("https://private.eu-es.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
 			url, err = atrackerv2.GetServiceURLForRegion("au-syd")
 			Expect(url).To(Equal("https://au-syd.atracker.cloud.ibm.com"))
 			Expect(err).To(BeNil())
 
 			url, err = atrackerv2.GetServiceURLForRegion("private.au-syd")
 			Expect(url).To(Equal("https://private.au-syd.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("ca-tor")
+			Expect(url).To(Equal("https://us-east.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("private.ca-tor")
+			Expect(url).To(Equal("https://private.us-east.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("br-sao")
+			Expect(url).To(Equal("https://us-south.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("private.br-sao")
+			Expect(url).To(Equal("https://private.us-south.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("eu-fr2")
+			Expect(url).To(Equal("https://eu-de.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("private.eu-fr2")
+			Expect(url).To(Equal("https://private.eu-de.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("jp-tok")
+			Expect(url).To(Equal("https://eu-de.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("private.jp-tok")
+			Expect(url).To(Equal("https://private.eu-de.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("jp-osa")
+			Expect(url).To(Equal("https://eu-de.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("private.jp-osa")
+			Expect(url).To(Equal("https://private.eu-de.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("in-che")
+			Expect(url).To(Equal("https://eu-de.atracker.cloud.ibm.com"))
+			Expect(err).To(BeNil())
+
+			url, err = atrackerv2.GetServiceURLForRegion("private.in-che")
+			Expect(url).To(Equal("https://private.eu-de.atracker.cloud.ibm.com"))
 			Expect(err).To(BeNil())
 
 			url, err = atrackerv2.GetServiceURLForRegion("INVALID_REGION")
@@ -237,12 +292,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the CreateTargetOptions model
 				createTargetOptionsModel := new(atrackerv2.CreateTargetOptions)
 				createTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				createTargetOptionsModel.TargetType = core.StringPtr("cloud_object_storage")
 				createTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				createTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				createTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				createTargetOptionsModel.Region = core.StringPtr("us-south")
 				createTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
@@ -296,8 +359,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(201)
-
-					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}`)
+					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}`)
 				}))
 			})
 			It(`Invoke CreateTarget successfully with retries`, func() {
@@ -322,12 +384,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the CreateTargetOptions model
 				createTargetOptionsModel := new(atrackerv2.CreateTargetOptions)
 				createTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				createTargetOptionsModel.TargetType = core.StringPtr("cloud_object_storage")
 				createTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				createTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				createTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				createTargetOptionsModel.Region = core.StringPtr("us-south")
 				createTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -384,8 +454,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(201)
-
-					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}`)
+					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}`)
 				}))
 			})
 			It(`Invoke CreateTarget successfully`, func() {
@@ -415,12 +484,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the CreateTargetOptions model
 				createTargetOptionsModel := new(atrackerv2.CreateTargetOptions)
 				createTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				createTargetOptionsModel.TargetType = core.StringPtr("cloud_object_storage")
 				createTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				createTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				createTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				createTargetOptionsModel.Region = core.StringPtr("us-south")
 				createTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -452,12 +529,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the CreateTargetOptions model
 				createTargetOptionsModel := new(atrackerv2.CreateTargetOptions)
 				createTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				createTargetOptionsModel.TargetType = core.StringPtr("cloud_object_storage")
 				createTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				createTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				createTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				createTargetOptionsModel.Region = core.StringPtr("us-south")
 				createTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
@@ -510,12 +595,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the CreateTargetOptions model
 				createTargetOptionsModel := new(atrackerv2.CreateTargetOptions)
 				createTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				createTargetOptionsModel.TargetType = core.StringPtr("cloud_object_storage")
 				createTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				createTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				createTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				createTargetOptionsModel.Region = core.StringPtr("us-south")
 				createTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -596,7 +689,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"targets": [{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}]}`)
+					fmt.Fprintf(res, "%s", `{"targets": [{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}]}`)
 				}))
 			})
 			It(`Invoke ListTargets successfully with retries`, func() {
@@ -651,9 +744,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-
-					fmt.Fprintf(res, "%s", `{"targets": [{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}]}`)
-
+					fmt.Fprintf(res, "%s", `{"targets": [{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}]}`)
 				}))
 			})
 			It(`Invoke ListTargets successfully`, func() {
@@ -804,8 +895,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}`)
-
+					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}`)
 				}))
 			})
 			It(`Invoke GetTarget successfully with retries`, func() {
@@ -859,8 +949,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}`)
-
+					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}`)
 				}))
 			})
 			It(`Invoke GetTarget successfully`, func() {
@@ -992,12 +1081,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the ReplaceTargetOptions model
 				replaceTargetOptionsModel := new(atrackerv2.ReplaceTargetOptions)
 				replaceTargetOptionsModel.ID = core.StringPtr("testString")
 				replaceTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				replaceTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				replaceTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				replaceTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				replaceTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := atrackerService.ReplaceTarget(replaceTargetOptionsModel)
@@ -1050,8 +1147,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}`)
-
+					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}`)
 				}))
 			})
 			It(`Invoke ReplaceTarget successfully with retries`, func() {
@@ -1076,12 +1172,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the ReplaceTargetOptions model
 				replaceTargetOptionsModel := new(atrackerv2.ReplaceTargetOptions)
 				replaceTargetOptionsModel.ID = core.StringPtr("testString")
 				replaceTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				replaceTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				replaceTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				replaceTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				replaceTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -1137,8 +1241,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}`)
-
+					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}`)
 				}))
 			})
 			It(`Invoke ReplaceTarget successfully`, func() {
@@ -1168,13 +1271,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the ReplaceTargetOptions model
 				replaceTargetOptionsModel := new(atrackerv2.ReplaceTargetOptions)
 				replaceTargetOptionsModel.ID = core.StringPtr("testString")
 				replaceTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				replaceTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				replaceTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
-
+				replaceTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				replaceTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -1205,12 +1315,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the ReplaceTargetOptions model
 				replaceTargetOptionsModel := new(atrackerv2.ReplaceTargetOptions)
 				replaceTargetOptionsModel.ID = core.StringPtr("testString")
 				replaceTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				replaceTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				replaceTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				replaceTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				replaceTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := atrackerService.SetServiceURL("")
@@ -1262,12 +1380,20 @@ var _ = Describe(`AtrackerV2`, func() {
 				logdnaEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 				logdnaEndpointPrototypeModel.IngestionKey = core.StringPtr("xxxxxxxxxxxxxx")
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+
 				// Construct an instance of the ReplaceTargetOptions model
 				replaceTargetOptionsModel := new(atrackerv2.ReplaceTargetOptions)
 				replaceTargetOptionsModel.ID = core.StringPtr("testString")
 				replaceTargetOptionsModel.Name = core.StringPtr("my-cos-target")
 				replaceTargetOptionsModel.CosEndpoint = cosEndpointPrototypeModel
 				replaceTargetOptionsModel.LogdnaEndpoint = logdnaEndpointPrototypeModel
+				replaceTargetOptionsModel.EventstreamsEndpoint = eventstreamsEndpointPrototypeModel
 				replaceTargetOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -1557,8 +1683,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}`)
-
+					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}`)
 				}))
 			})
 			It(`Invoke ValidateTarget successfully with retries`, func() {
@@ -1612,8 +1737,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2}`)
-
+					fmt.Fprintf(res, "%s", `{"id": "f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "name": "a-cos-target-us-south", "crn": "crn:v1:bluemix:public:atracker:us-south:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:target:f7dcfae6-e7c5-08ca-451b-fdfa696c9bb6", "target_type": "cloud_object_storage", "region": "us-south", "cos_endpoint": {"endpoint": "s3.private.us-east.cloud-object-storage.appdomain.cloud", "target_crn": "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "bucket": "my-atracker-bucket", "service_to_service_enabled": true}, "logdna_endpoint": {"target_crn": "crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"}, "eventstreams_endpoint": {"target_crn": "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::", "brokers": ["kafka-x:9094"], "topic": "my-topic", "api_key": "xxxxxxxxxxxxxx"}, "write_status": {"status": "success", "last_failure": "2021-05-18T20:15:12.353Z", "reason_for_last_failure": "Provided API key could not be found"}, "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "message": "This is a valid target. However, there is another target already defined with the same target endpoint.", "api_version": 2}`)
 				}))
 			})
 			It(`Invoke ValidateTarget successfully`, func() {
@@ -1794,7 +1918,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(201)
 					fmt.Fprintf(res, "%s", `{"id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "name": "my-route", "crn": "crn:v1:bluemix:public:atracker:global:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "version": 0, "rules": [{"target_ids": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "locations": ["us-south"]}], "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2, "message": "Route was created successfully."}`)
-
 				}))
 			})
 			It(`Invoke CreateRoute successfully with retries`, func() {
@@ -1871,7 +1994,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(201)
 					fmt.Fprintf(res, "%s", `{"id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "name": "my-route", "crn": "crn:v1:bluemix:public:atracker:global:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "version": 0, "rules": [{"target_ids": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "locations": ["us-south"]}], "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2, "message": "Route was created successfully."}`)
-
 				}))
 			})
 			It(`Invoke CreateRoute successfully`, func() {
@@ -1995,7 +2117,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Verify the contents of the request
 					Expect(req.URL.EscapedPath()).To(Equal(listRoutesPath))
 					Expect(req.Method).To(Equal("GET"))
-					Expect(req.URL.Query()["region"]).To(Equal([]string{"testString"}))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -2011,7 +2132,6 @@ var _ = Describe(`AtrackerV2`, func() {
 
 				// Construct an instance of the ListRoutesOptions model
 				listRoutesOptionsModel := new(atrackerv2.ListRoutesOptions)
-				listRoutesOptionsModel.Region = core.StringPtr("testString")
 				listRoutesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := atrackerService.ListRoutes(listRoutesOptionsModel)
@@ -2042,7 +2162,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(listRoutesPath))
 					Expect(req.Method).To(Equal("GET"))
 
-					Expect(req.URL.Query()["region"]).To(Equal([]string{"testString"}))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -2050,7 +2169,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprintf(res, "%s", `{"routes": [{"id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "name": "my-route", "crn": "crn:v1:bluemix:public:atracker:global:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "version": 0, "rules": [{"target_ids": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "locations": ["us-south"]}], "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2, "message": "Route was created successfully."}]}`)
-
 				}))
 			})
 			It(`Invoke ListRoutes successfully with retries`, func() {
@@ -2064,7 +2182,6 @@ var _ = Describe(`AtrackerV2`, func() {
 
 				// Construct an instance of the ListRoutesOptions model
 				listRoutesOptionsModel := new(atrackerv2.ListRoutesOptions)
-				listRoutesOptionsModel.Region = core.StringPtr("testString")
 				listRoutesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -2101,12 +2218,10 @@ var _ = Describe(`AtrackerV2`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(listRoutesPath))
 					Expect(req.Method).To(Equal("GET"))
 
-					Expect(req.URL.Query()["region"]).To(Equal([]string{"testString"}))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprintf(res, "%s", `{"routes": [{"id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "name": "my-route", "crn": "crn:v1:bluemix:public:atracker:global:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "version": 0, "rules": [{"target_ids": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "locations": ["us-south"]}], "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2, "message": "Route was created successfully."}]}`)
-
 				}))
 			})
 			It(`Invoke ListRoutes successfully`, func() {
@@ -2125,7 +2240,6 @@ var _ = Describe(`AtrackerV2`, func() {
 
 				// Construct an instance of the ListRoutesOptions model
 				listRoutesOptionsModel := new(atrackerv2.ListRoutesOptions)
-				listRoutesOptionsModel.Region = core.StringPtr("testString")
 				listRoutesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -2145,7 +2259,6 @@ var _ = Describe(`AtrackerV2`, func() {
 
 				// Construct an instance of the ListRoutesOptions model
 				listRoutesOptionsModel := new(atrackerv2.ListRoutesOptions)
-				listRoutesOptionsModel.Region = core.StringPtr("testString")
 				listRoutesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := atrackerService.SetServiceURL("")
@@ -2179,7 +2292,6 @@ var _ = Describe(`AtrackerV2`, func() {
 
 				// Construct an instance of the ListRoutesOptions model
 				listRoutesOptionsModel := new(atrackerv2.ListRoutesOptions)
-				listRoutesOptionsModel.Region = core.StringPtr("testString")
 				listRoutesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -2258,7 +2370,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprintf(res, "%s", `{"id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "name": "my-route", "crn": "crn:v1:bluemix:public:atracker:global:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "version": 0, "rules": [{"target_ids": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "locations": ["us-south"]}], "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2, "message": "Route was created successfully."}`)
-
 				}))
 			})
 			It(`Invoke GetRoute successfully with retries`, func() {
@@ -2313,7 +2424,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprintf(res, "%s", `{"id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "name": "my-route", "crn": "crn:v1:bluemix:public:atracker:global:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "version": 0, "rules": [{"target_ids": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "locations": ["us-south"]}], "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2, "message": "Route was created successfully."}`)
-
 				}))
 			})
 			It(`Invoke GetRoute successfully`, func() {
@@ -2495,7 +2605,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprintf(res, "%s", `{"id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "name": "my-route", "crn": "crn:v1:bluemix:public:atracker:global:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "version": 0, "rules": [{"target_ids": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "locations": ["us-south"]}], "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2, "message": "Route was created successfully."}`)
-
 				}))
 			})
 			It(`Invoke ReplaceRoute successfully with retries`, func() {
@@ -2573,7 +2682,6 @@ var _ = Describe(`AtrackerV2`, func() {
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprintf(res, "%s", `{"id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "name": "my-route", "crn": "crn:v1:bluemix:public:atracker:global:a/11111111111111111111111111111111:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "version": 0, "rules": [{"target_ids": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "locations": ["us-south"]}], "created_at": "2021-05-18T20:15:12.353Z", "updated_at": "2021-05-18T20:15:12.353Z", "api_version": 2, "message": "Route was created successfully."}`)
-
 				}))
 			})
 			It(`Invoke ReplaceRoute successfully`, func() {
@@ -2819,7 +2927,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"default_targets": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "permitted_target_regions": ["us-south"], "metadata_region_primary": "us-south", "private_api_endpoint_only": false, "api_version": 2}`)
+					fmt.Fprintf(res, "%s", `{"default_targets": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "permitted_target_regions": ["us-south"], "metadata_region_primary": "us-south", "metadata_region_backup": "eu-de", "private_api_endpoint_only": false, "api_version": 2, "message": "The route and target audit logs can be found in the metadata primary region and everything else can be found in the region it is being called from."}`)
 				}))
 			})
 			It(`Invoke GetSettings successfully with retries`, func() {
@@ -2872,7 +2980,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"default_targets": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "permitted_target_regions": ["us-south"], "metadata_region_primary": "us-south", "private_api_endpoint_only": false, "api_version": 2}`)
+					fmt.Fprintf(res, "%s", `{"default_targets": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "permitted_target_regions": ["us-south"], "metadata_region_primary": "us-south", "metadata_region_backup": "eu-de", "private_api_endpoint_only": false, "api_version": 2, "message": "The route and target audit logs can be found in the metadata primary region and everything else can be found in the region it is being called from."}`)
 				}))
 			})
 			It(`Invoke GetSettings successfully`, func() {
@@ -2987,6 +3095,7 @@ var _ = Describe(`AtrackerV2`, func() {
 				putSettingsOptionsModel.PrivateAPIEndpointOnly = core.BoolPtr(false)
 				putSettingsOptionsModel.DefaultTargets = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
 				putSettingsOptionsModel.PermittedTargetRegions = []string{"us-south"}
+				putSettingsOptionsModel.MetadataRegionBackup = core.StringPtr("eu-de")
 				putSettingsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := atrackerService.PutSettings(putSettingsOptionsModel)
@@ -3039,7 +3148,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(201)
-					fmt.Fprintf(res, "%s", `{"default_targets": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "permitted_target_regions": ["us-south"], "metadata_region_primary": "us-south", "private_api_endpoint_only": false, "api_version": 2}`)
+					fmt.Fprintf(res, "%s", `{"default_targets": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "permitted_target_regions": ["us-south"], "metadata_region_primary": "us-south", "metadata_region_backup": "eu-de", "private_api_endpoint_only": false, "api_version": 2, "message": "The route and target audit logs can be found in the metadata primary region and everything else can be found in the region it is being called from."}`)
 				}))
 			})
 			It(`Invoke PutSettings successfully with retries`, func() {
@@ -3057,6 +3166,7 @@ var _ = Describe(`AtrackerV2`, func() {
 				putSettingsOptionsModel.PrivateAPIEndpointOnly = core.BoolPtr(false)
 				putSettingsOptionsModel.DefaultTargets = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
 				putSettingsOptionsModel.PermittedTargetRegions = []string{"us-south"}
+				putSettingsOptionsModel.MetadataRegionBackup = core.StringPtr("eu-de")
 				putSettingsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -3112,7 +3222,7 @@ var _ = Describe(`AtrackerV2`, func() {
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(201)
-					fmt.Fprintf(res, "%s", `{"default_targets": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "permitted_target_regions": ["us-south"], "metadata_region_primary": "us-south", "private_api_endpoint_only": false, "api_version": 2}`)
+					fmt.Fprintf(res, "%s", `{"default_targets": ["c3af557f-fb0e-4476-85c3-0889e7fe7bc4"], "permitted_target_regions": ["us-south"], "metadata_region_primary": "us-south", "metadata_region_backup": "eu-de", "private_api_endpoint_only": false, "api_version": 2, "message": "The route and target audit logs can be found in the metadata primary region and everything else can be found in the region it is being called from."}`)
 				}))
 			})
 			It(`Invoke PutSettings successfully`, func() {
@@ -3135,6 +3245,7 @@ var _ = Describe(`AtrackerV2`, func() {
 				putSettingsOptionsModel.PrivateAPIEndpointOnly = core.BoolPtr(false)
 				putSettingsOptionsModel.DefaultTargets = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
 				putSettingsOptionsModel.PermittedTargetRegions = []string{"us-south"}
+				putSettingsOptionsModel.MetadataRegionBackup = core.StringPtr("eu-de")
 				putSettingsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -3158,6 +3269,7 @@ var _ = Describe(`AtrackerV2`, func() {
 				putSettingsOptionsModel.PrivateAPIEndpointOnly = core.BoolPtr(false)
 				putSettingsOptionsModel.DefaultTargets = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
 				putSettingsOptionsModel.PermittedTargetRegions = []string{"us-south"}
+				putSettingsOptionsModel.MetadataRegionBackup = core.StringPtr("eu-de")
 				putSettingsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := atrackerService.SetServiceURL("")
@@ -3202,414 +3314,11 @@ var _ = Describe(`AtrackerV2`, func() {
 				putSettingsOptionsModel.PrivateAPIEndpointOnly = core.BoolPtr(false)
 				putSettingsOptionsModel.DefaultTargets = []string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}
 				putSettingsOptionsModel.PermittedTargetRegions = []string{"us-south"}
+				putSettingsOptionsModel.MetadataRegionBackup = core.StringPtr("eu-de")
 				putSettingsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
 				result, response, operationErr := atrackerService.PutSettings(putSettingsOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-
-				// Verify a nil result
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-	})
-	Describe(`PostMigration(postMigrationOptions *PostMigrationOptions) - Operation response error`, func() {
-		postMigrationPath := "/api/v2/migration"
-		Context(`Using mock server endpoint with invalid JSON response`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(postMigrationPath))
-					Expect(req.Method).To(Equal("POST"))
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprint(res, `} this is not valid json {`)
-				}))
-			})
-			It(`Invoke PostMigration with error: Operation response processing error`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-
-				// Construct an instance of the PostMigrationOptions model
-				postMigrationOptionsModel := new(atrackerv2.PostMigrationOptions)
-				postMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-				// Expect response parsing to fail since we are receiving a text/plain response
-				result, response, operationErr := atrackerService.PostMigration(postMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).To(BeNil())
-
-				// Enable retries and test again
-				atrackerService.EnableRetries(0, 0)
-				result, response, operationErr = atrackerService.PostMigration(postMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-	})
-	Describe(`PostMigration(postMigrationOptions *PostMigrationOptions)`, func() {
-		postMigrationPath := "/api/v2/migration"
-		Context(`Using mock server endpoint with timeout`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(postMigrationPath))
-					Expect(req.Method).To(Equal("POST"))
-
-					// Sleep a short time to support a timeout test
-					time.Sleep(100 * time.Millisecond)
-
-					// Set mock response
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"progress": 8, "status": "pending", "migration_items": [{"resource_type": "target", "id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "region": "us-south", "status": "not_started", "detailed_status": ["migration of this resource is successful."], "error": "Error"}]}`)
-
-				}))
-			})
-			It(`Invoke PostMigration successfully with retries`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-				atrackerService.EnableRetries(0, 0)
-
-				// Construct an instance of the PostMigrationOptions model
-				postMigrationOptionsModel := new(atrackerv2.PostMigrationOptions)
-				postMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation with a Context to test a timeout error
-				ctx, cancelFunc := context.WithTimeout(context.Background(), 80*time.Millisecond)
-				defer cancelFunc()
-				_, _, operationErr := atrackerService.PostMigrationWithContext(ctx, postMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring("deadline exceeded"))
-
-				// Disable retries and test again
-				atrackerService.DisableRetries()
-				result, response, operationErr := atrackerService.PostMigration(postMigrationOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).ToNot(BeNil())
-
-				// Re-test the timeout error with retries disabled
-				ctx, cancelFunc2 := context.WithTimeout(context.Background(), 80*time.Millisecond)
-				defer cancelFunc2()
-				_, _, operationErr = atrackerService.PostMigrationWithContext(ctx, postMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring("deadline exceeded"))
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-		Context(`Using mock server endpoint`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(postMigrationPath))
-					Expect(req.Method).To(Equal("POST"))
-
-					// Set mock response
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"progress": 8, "status": "pending", "migration_items": [{"resource_type": "target", "id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "region": "us-south", "status": "not_started", "detailed_status": ["migration of this resource is successful."], "error": "Error"}]}`)
-
-				}))
-			})
-			It(`Invoke PostMigration successfully`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-
-				// Invoke operation with nil options model (negative test)
-				result, response, operationErr := atrackerService.PostMigration(nil)
-				Expect(operationErr).NotTo(BeNil())
-				Expect(response).To(BeNil())
-				Expect(result).To(BeNil())
-
-				// Construct an instance of the PostMigrationOptions model
-				postMigrationOptionsModel := new(atrackerv2.PostMigrationOptions)
-				postMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation with valid options model (positive test)
-				result, response, operationErr = atrackerService.PostMigration(postMigrationOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).ToNot(BeNil())
-
-			})
-			It(`Invoke PostMigration with error: Operation request error`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-
-				// Construct an instance of the PostMigrationOptions model
-				postMigrationOptionsModel := new(atrackerv2.PostMigrationOptions)
-				postMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-				// Invoke operation with empty URL (negative test)
-				err := atrackerService.SetServiceURL("")
-				Expect(err).To(BeNil())
-				result, response, operationErr := atrackerService.PostMigration(postMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring(core.ERRORMSG_SERVICE_URL_MISSING))
-				Expect(response).To(BeNil())
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-		Context(`Using mock server endpoint with missing response body`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Set success status code with no respoonse body
-					res.WriteHeader(200)
-				}))
-			})
-			It(`Invoke PostMigration successfully`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-
-				// Construct an instance of the PostMigrationOptions model
-				postMigrationOptionsModel := new(atrackerv2.PostMigrationOptions)
-				postMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation
-				result, response, operationErr := atrackerService.PostMigration(postMigrationOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-
-				// Verify a nil result
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-	})
-	Describe(`GetMigration(getMigrationOptions *GetMigrationOptions) - Operation response error`, func() {
-		getMigrationPath := "/api/v2/migration"
-		Context(`Using mock server endpoint with invalid JSON response`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(getMigrationPath))
-					Expect(req.Method).To(Equal("GET"))
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprint(res, `} this is not valid json {`)
-				}))
-			})
-			It(`Invoke GetMigration with error: Operation response processing error`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-
-				// Construct an instance of the GetMigrationOptions model
-				getMigrationOptionsModel := new(atrackerv2.GetMigrationOptions)
-				getMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-				// Expect response parsing to fail since we are receiving a text/plain response
-				result, response, operationErr := atrackerService.GetMigration(getMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).To(BeNil())
-
-				// Enable retries and test again
-				atrackerService.EnableRetries(0, 0)
-				result, response, operationErr = atrackerService.GetMigration(getMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-	})
-	Describe(`GetMigration(getMigrationOptions *GetMigrationOptions)`, func() {
-		getMigrationPath := "/api/v2/migration"
-		Context(`Using mock server endpoint with timeout`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(getMigrationPath))
-					Expect(req.Method).To(Equal("GET"))
-
-					// Sleep a short time to support a timeout test
-					time.Sleep(100 * time.Millisecond)
-
-					// Set mock response
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"progress": 8, "status": "pending", "migration_items": [{"resource_type": "target", "id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "region": "us-south", "status": "not_started", "detailed_status": ["migration of this resource is successful."], "error": "Error"}]}`)
-
-				}))
-			})
-			It(`Invoke GetMigration successfully with retries`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-				atrackerService.EnableRetries(0, 0)
-
-				// Construct an instance of the GetMigrationOptions model
-				getMigrationOptionsModel := new(atrackerv2.GetMigrationOptions)
-				getMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation with a Context to test a timeout error
-				ctx, cancelFunc := context.WithTimeout(context.Background(), 80*time.Millisecond)
-				defer cancelFunc()
-				_, _, operationErr := atrackerService.GetMigrationWithContext(ctx, getMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring("deadline exceeded"))
-
-				// Disable retries and test again
-				atrackerService.DisableRetries()
-				result, response, operationErr := atrackerService.GetMigration(getMigrationOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).ToNot(BeNil())
-
-				// Re-test the timeout error with retries disabled
-				ctx, cancelFunc2 := context.WithTimeout(context.Background(), 80*time.Millisecond)
-				defer cancelFunc2()
-				_, _, operationErr = atrackerService.GetMigrationWithContext(ctx, getMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring("deadline exceeded"))
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-		Context(`Using mock server endpoint`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(getMigrationPath))
-					Expect(req.Method).To(Equal("GET"))
-
-					// Set mock response
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"progress": 8, "status": "pending", "migration_items": [{"resource_type": "target", "id": "c3af557f-fb0e-4476-85c3-0889e7fe7bc4", "region": "us-south", "status": "not_started", "detailed_status": ["migration of this resource is successful."], "error": "Error"}]}`)
-
-				}))
-			})
-			It(`Invoke GetMigration successfully`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-
-				// Invoke operation with nil options model (negative test)
-				result, response, operationErr := atrackerService.GetMigration(nil)
-				Expect(operationErr).NotTo(BeNil())
-				Expect(response).To(BeNil())
-				Expect(result).To(BeNil())
-
-				// Construct an instance of the GetMigrationOptions model
-				getMigrationOptionsModel := new(atrackerv2.GetMigrationOptions)
-				getMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation with valid options model (positive test)
-				result, response, operationErr = atrackerService.GetMigration(getMigrationOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).ToNot(BeNil())
-
-			})
-			It(`Invoke GetMigration with error: Operation request error`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-
-				// Construct an instance of the GetMigrationOptions model
-				getMigrationOptionsModel := new(atrackerv2.GetMigrationOptions)
-				getMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-				// Invoke operation with empty URL (negative test)
-				err := atrackerService.SetServiceURL("")
-				Expect(err).To(BeNil())
-				result, response, operationErr := atrackerService.GetMigration(getMigrationOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring(core.ERRORMSG_SERVICE_URL_MISSING))
-				Expect(response).To(BeNil())
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-		Context(`Using mock server endpoint with missing response body`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Set success status code with no respoonse body
-					res.WriteHeader(200)
-				}))
-			})
-			It(`Invoke GetMigration successfully`, func() {
-				atrackerService, serviceErr := atrackerv2.NewAtrackerV2(&atrackerv2.AtrackerV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(atrackerService).ToNot(BeNil())
-
-				// Construct an instance of the GetMigrationOptions model
-				getMigrationOptionsModel := new(atrackerv2.GetMigrationOptions)
-				getMigrationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation
-				result, response, operationErr := atrackerService.GetMigration(getMigrationOptionsModel)
 				Expect(operationErr).To(BeNil())
 				Expect(response).ToNot(BeNil())
 
@@ -3679,15 +3388,27 @@ var _ = Describe(`AtrackerV2`, func() {
 				Expect(logdnaEndpointPrototypeModel.TargetCRN).To(Equal(core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")))
 				Expect(logdnaEndpointPrototypeModel.IngestionKey).To(Equal(core.StringPtr("xxxxxxxxxxxxxx")))
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				Expect(eventstreamsEndpointPrototypeModel).ToNot(BeNil())
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+				Expect(eventstreamsEndpointPrototypeModel.TargetCRN).To(Equal(core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")))
+				Expect(eventstreamsEndpointPrototypeModel.Brokers).To(Equal([]string{"kafka-x:9094"}))
+				Expect(eventstreamsEndpointPrototypeModel.Topic).To(Equal(core.StringPtr("my-topic")))
+				Expect(eventstreamsEndpointPrototypeModel.APIKey).To(Equal(core.StringPtr("xxxxxxxxxxxxxx")))
+
 				// Construct an instance of the CreateTargetOptions model
 				createTargetOptionsName := "my-cos-target"
 				createTargetOptionsTargetType := "cloud_object_storage"
-				var createTargetOptionsCosEndpoint *atrackerv2.CosEndpointPrototype = nil
-				createTargetOptionsModel := atrackerService.NewCreateTargetOptions(createTargetOptionsName, createTargetOptionsTargetType, createTargetOptionsCosEndpoint)
+				createTargetOptionsModel := atrackerService.NewCreateTargetOptions(createTargetOptionsName, createTargetOptionsTargetType)
 				createTargetOptionsModel.SetName("my-cos-target")
 				createTargetOptionsModel.SetTargetType("cloud_object_storage")
 				createTargetOptionsModel.SetCosEndpoint(cosEndpointPrototypeModel)
 				createTargetOptionsModel.SetLogdnaEndpoint(logdnaEndpointPrototypeModel)
+				createTargetOptionsModel.SetEventstreamsEndpoint(eventstreamsEndpointPrototypeModel)
 				createTargetOptionsModel.SetRegion("us-south")
 				createTargetOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(createTargetOptionsModel).ToNot(BeNil())
@@ -3695,6 +3416,7 @@ var _ = Describe(`AtrackerV2`, func() {
 				Expect(createTargetOptionsModel.TargetType).To(Equal(core.StringPtr("cloud_object_storage")))
 				Expect(createTargetOptionsModel.CosEndpoint).To(Equal(cosEndpointPrototypeModel))
 				Expect(createTargetOptionsModel.LogdnaEndpoint).To(Equal(logdnaEndpointPrototypeModel))
+				Expect(createTargetOptionsModel.EventstreamsEndpoint).To(Equal(eventstreamsEndpointPrototypeModel))
 				Expect(createTargetOptionsModel.Region).To(Equal(core.StringPtr("us-south")))
 				Expect(createTargetOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
@@ -3718,12 +3440,14 @@ var _ = Describe(`AtrackerV2`, func() {
 				Expect(deleteTargetOptionsModel.ID).To(Equal(core.StringPtr("testString")))
 				Expect(deleteTargetOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
-			It(`Invoke NewGetMigrationOptions successfully`, func() {
-				// Construct an instance of the GetMigrationOptions model
-				getMigrationOptionsModel := atrackerService.NewGetMigrationOptions()
-				getMigrationOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
-				Expect(getMigrationOptionsModel).ToNot(BeNil())
-				Expect(getMigrationOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
+			It(`Invoke NewEventstreamsEndpointPrototype successfully`, func() {
+				targetCRN := "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				brokers := []string{"kafka-x:9094"}
+				topic := "my-topic"
+				apiKey := "xxxxxxxxxxxxxx"
+				_model, err := atrackerService.NewEventstreamsEndpointPrototype(targetCRN, brokers, topic, apiKey)
+				Expect(_model).ToNot(BeNil())
+				Expect(err).To(BeNil())
 			})
 			It(`Invoke NewGetRouteOptions successfully`, func() {
 				// Construct an instance of the GetRouteOptions model
@@ -3755,10 +3479,8 @@ var _ = Describe(`AtrackerV2`, func() {
 			It(`Invoke NewListRoutesOptions successfully`, func() {
 				// Construct an instance of the ListRoutesOptions model
 				listRoutesOptionsModel := atrackerService.NewListRoutesOptions()
-				listRoutesOptionsModel.SetRegion("testString")
 				listRoutesOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(listRoutesOptionsModel).ToNot(BeNil())
-				Expect(listRoutesOptionsModel.Region).To(Equal(core.StringPtr("testString")))
 				Expect(listRoutesOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewListTargetsOptions successfully`, func() {
@@ -3777,13 +3499,6 @@ var _ = Describe(`AtrackerV2`, func() {
 				Expect(_model).ToNot(BeNil())
 				Expect(err).To(BeNil())
 			})
-			It(`Invoke NewPostMigrationOptions successfully`, func() {
-				// Construct an instance of the PostMigrationOptions model
-				postMigrationOptionsModel := atrackerService.NewPostMigrationOptions()
-				postMigrationOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
-				Expect(postMigrationOptionsModel).ToNot(BeNil())
-				Expect(postMigrationOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
-			})
 			It(`Invoke NewPutSettingsOptions successfully`, func() {
 				// Construct an instance of the PutSettingsOptions model
 				putSettingsOptionsMetadataRegionPrimary := "us-south"
@@ -3793,12 +3508,14 @@ var _ = Describe(`AtrackerV2`, func() {
 				putSettingsOptionsModel.SetPrivateAPIEndpointOnly(false)
 				putSettingsOptionsModel.SetDefaultTargets([]string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"})
 				putSettingsOptionsModel.SetPermittedTargetRegions([]string{"us-south"})
+				putSettingsOptionsModel.SetMetadataRegionBackup("eu-de")
 				putSettingsOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(putSettingsOptionsModel).ToNot(BeNil())
 				Expect(putSettingsOptionsModel.MetadataRegionPrimary).To(Equal(core.StringPtr("us-south")))
 				Expect(putSettingsOptionsModel.PrivateAPIEndpointOnly).To(Equal(core.BoolPtr(false)))
 				Expect(putSettingsOptionsModel.DefaultTargets).To(Equal([]string{"c3af557f-fb0e-4476-85c3-0889e7fe7bc4"}))
 				Expect(putSettingsOptionsModel.PermittedTargetRegions).To(Equal([]string{"us-south"}))
+				Expect(putSettingsOptionsModel.MetadataRegionBackup).To(Equal(core.StringPtr("eu-de")))
 				Expect(putSettingsOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewReplaceRouteOptions successfully`, func() {
@@ -3848,6 +3565,18 @@ var _ = Describe(`AtrackerV2`, func() {
 				Expect(logdnaEndpointPrototypeModel.TargetCRN).To(Equal(core.StringPtr("crn:v1:bluemix:public:logdna:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")))
 				Expect(logdnaEndpointPrototypeModel.IngestionKey).To(Equal(core.StringPtr("xxxxxxxxxxxxxx")))
 
+				// Construct an instance of the EventstreamsEndpointPrototype model
+				eventstreamsEndpointPrototypeModel := new(atrackerv2.EventstreamsEndpointPrototype)
+				Expect(eventstreamsEndpointPrototypeModel).ToNot(BeNil())
+				eventstreamsEndpointPrototypeModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+				eventstreamsEndpointPrototypeModel.Brokers = []string{"kafka-x:9094"}
+				eventstreamsEndpointPrototypeModel.Topic = core.StringPtr("my-topic")
+				eventstreamsEndpointPrototypeModel.APIKey = core.StringPtr("xxxxxxxxxxxxxx")
+				Expect(eventstreamsEndpointPrototypeModel.TargetCRN).To(Equal(core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")))
+				Expect(eventstreamsEndpointPrototypeModel.Brokers).To(Equal([]string{"kafka-x:9094"}))
+				Expect(eventstreamsEndpointPrototypeModel.Topic).To(Equal(core.StringPtr("my-topic")))
+				Expect(eventstreamsEndpointPrototypeModel.APIKey).To(Equal(core.StringPtr("xxxxxxxxxxxxxx")))
+
 				// Construct an instance of the ReplaceTargetOptions model
 				id := "testString"
 				replaceTargetOptionsModel := atrackerService.NewReplaceTargetOptions(id)
@@ -3855,12 +3584,14 @@ var _ = Describe(`AtrackerV2`, func() {
 				replaceTargetOptionsModel.SetName("my-cos-target")
 				replaceTargetOptionsModel.SetCosEndpoint(cosEndpointPrototypeModel)
 				replaceTargetOptionsModel.SetLogdnaEndpoint(logdnaEndpointPrototypeModel)
+				replaceTargetOptionsModel.SetEventstreamsEndpoint(eventstreamsEndpointPrototypeModel)
 				replaceTargetOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(replaceTargetOptionsModel).ToNot(BeNil())
 				Expect(replaceTargetOptionsModel.ID).To(Equal(core.StringPtr("testString")))
 				Expect(replaceTargetOptionsModel.Name).To(Equal(core.StringPtr("my-cos-target")))
 				Expect(replaceTargetOptionsModel.CosEndpoint).To(Equal(cosEndpointPrototypeModel))
 				Expect(replaceTargetOptionsModel.LogdnaEndpoint).To(Equal(logdnaEndpointPrototypeModel))
+				Expect(replaceTargetOptionsModel.EventstreamsEndpoint).To(Equal(eventstreamsEndpointPrototypeModel))
 				Expect(replaceTargetOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewRulePrototype successfully`, func() {
@@ -3921,7 +3652,7 @@ func CreateMockUUID(mockData string) *strfmt.UUID {
 }
 
 func CreateMockReader(mockData string) io.ReadCloser {
-	return ioutil.NopCloser(bytes.NewReader([]byte(mockData)))
+	return io.NopCloser(bytes.NewReader([]byte(mockData)))
 }
 
 func CreateMockDate(mockData string) *strfmt.Date {

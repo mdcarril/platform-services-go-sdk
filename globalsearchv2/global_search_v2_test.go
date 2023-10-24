@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -174,14 +173,23 @@ var _ = Describe(`GlobalSearchV2`, func() {
 					// Verify the contents of the request
 					Expect(req.URL.EscapedPath()).To(Equal(searchPath))
 					Expect(req.Method).To(Equal("POST"))
+					Expect(req.Header["X-Request-Id"]).ToNot(BeNil())
+					Expect(req.Header["X-Request-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
+					Expect(req.Header["X-Correlation-Id"]).ToNot(BeNil())
+					Expect(req.Header["X-Correlation-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.Header["Transaction-Id"]).ToNot(BeNil())
 					Expect(req.Header["Transaction-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["account_id"]).To(Equal([]string{"testString"}))
-					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(1))}))
+					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(10))}))
 					Expect(req.URL.Query()["timeout"]).To(Equal([]string{fmt.Sprint(int64(0))}))
+					Expect(req.URL.Query()["is_deleted"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["is_reclaimed"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["is_public"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["impersonate_user"]).To(Equal([]string{"testString"}))
+					Expect(req.URL.Query()["can_tag"]).To(Equal([]string{"false"}))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, `} this is not valid json {`)
+					fmt.Fprint(res, `} this is not valid json {`)
 				}))
 			})
 			It(`Invoke Search with error: Operation response processing error`, func() {
@@ -197,11 +205,18 @@ var _ = Describe(`GlobalSearchV2`, func() {
 				searchOptionsModel.Query = core.StringPtr("testString")
 				searchOptionsModel.Fields = []string{"testString"}
 				searchOptionsModel.SearchCursor = core.StringPtr("testString")
+				searchOptionsModel.XRequestID = core.StringPtr("testString")
+				searchOptionsModel.XCorrelationID = core.StringPtr("testString")
 				searchOptionsModel.TransactionID = core.StringPtr("testString")
 				searchOptionsModel.AccountID = core.StringPtr("testString")
-				searchOptionsModel.Limit = core.Int64Ptr(int64(1))
+				searchOptionsModel.Limit = core.Int64Ptr(int64(10))
 				searchOptionsModel.Timeout = core.Int64Ptr(int64(0))
 				searchOptionsModel.Sort = []string{"testString"}
+				searchOptionsModel.IsDeleted = core.StringPtr("false")
+				searchOptionsModel.IsReclaimed = core.StringPtr("false")
+				searchOptionsModel.IsPublic = core.StringPtr("false")
+				searchOptionsModel.ImpersonateUser = core.StringPtr("testString")
+				searchOptionsModel.CanTag = core.StringPtr("false")
 				searchOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := globalSearchService.Search(searchOptionsModel)
@@ -248,11 +263,20 @@ var _ = Describe(`GlobalSearchV2`, func() {
 					}
 					fmt.Fprintf(GinkgoWriter, "  Request body: %s", bodyBuf.String())
 
+					Expect(req.Header["X-Request-Id"]).ToNot(BeNil())
+					Expect(req.Header["X-Request-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
+					Expect(req.Header["X-Correlation-Id"]).ToNot(BeNil())
+					Expect(req.Header["X-Correlation-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.Header["Transaction-Id"]).ToNot(BeNil())
 					Expect(req.Header["Transaction-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["account_id"]).To(Equal([]string{"testString"}))
-					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(1))}))
+					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(10))}))
 					Expect(req.URL.Query()["timeout"]).To(Equal([]string{fmt.Sprint(int64(0))}))
+					Expect(req.URL.Query()["is_deleted"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["is_reclaimed"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["is_public"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["impersonate_user"]).To(Equal([]string{"testString"}))
+					Expect(req.URL.Query()["can_tag"]).To(Equal([]string{"false"}))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -276,11 +300,18 @@ var _ = Describe(`GlobalSearchV2`, func() {
 				searchOptionsModel.Query = core.StringPtr("testString")
 				searchOptionsModel.Fields = []string{"testString"}
 				searchOptionsModel.SearchCursor = core.StringPtr("testString")
+				searchOptionsModel.XRequestID = core.StringPtr("testString")
+				searchOptionsModel.XCorrelationID = core.StringPtr("testString")
 				searchOptionsModel.TransactionID = core.StringPtr("testString")
 				searchOptionsModel.AccountID = core.StringPtr("testString")
-				searchOptionsModel.Limit = core.Int64Ptr(int64(1))
+				searchOptionsModel.Limit = core.Int64Ptr(int64(10))
 				searchOptionsModel.Timeout = core.Int64Ptr(int64(0))
 				searchOptionsModel.Sort = []string{"testString"}
+				searchOptionsModel.IsDeleted = core.StringPtr("false")
+				searchOptionsModel.IsReclaimed = core.StringPtr("false")
+				searchOptionsModel.IsPublic = core.StringPtr("false")
+				searchOptionsModel.ImpersonateUser = core.StringPtr("testString")
+				searchOptionsModel.CanTag = core.StringPtr("false")
 				searchOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -333,11 +364,20 @@ var _ = Describe(`GlobalSearchV2`, func() {
 					}
 					fmt.Fprintf(GinkgoWriter, "  Request body: %s", bodyBuf.String())
 
+					Expect(req.Header["X-Request-Id"]).ToNot(BeNil())
+					Expect(req.Header["X-Request-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
+					Expect(req.Header["X-Correlation-Id"]).ToNot(BeNil())
+					Expect(req.Header["X-Correlation-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.Header["Transaction-Id"]).ToNot(BeNil())
 					Expect(req.Header["Transaction-Id"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["account_id"]).To(Equal([]string{"testString"}))
-					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(1))}))
+					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(10))}))
 					Expect(req.URL.Query()["timeout"]).To(Equal([]string{fmt.Sprint(int64(0))}))
+					Expect(req.URL.Query()["is_deleted"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["is_reclaimed"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["is_public"]).To(Equal([]string{"false"}))
+					Expect(req.URL.Query()["impersonate_user"]).To(Equal([]string{"testString"}))
+					Expect(req.URL.Query()["can_tag"]).To(Equal([]string{"false"}))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -363,11 +403,18 @@ var _ = Describe(`GlobalSearchV2`, func() {
 				searchOptionsModel.Query = core.StringPtr("testString")
 				searchOptionsModel.Fields = []string{"testString"}
 				searchOptionsModel.SearchCursor = core.StringPtr("testString")
+				searchOptionsModel.XRequestID = core.StringPtr("testString")
+				searchOptionsModel.XCorrelationID = core.StringPtr("testString")
 				searchOptionsModel.TransactionID = core.StringPtr("testString")
 				searchOptionsModel.AccountID = core.StringPtr("testString")
-				searchOptionsModel.Limit = core.Int64Ptr(int64(1))
+				searchOptionsModel.Limit = core.Int64Ptr(int64(10))
 				searchOptionsModel.Timeout = core.Int64Ptr(int64(0))
 				searchOptionsModel.Sort = []string{"testString"}
+				searchOptionsModel.IsDeleted = core.StringPtr("false")
+				searchOptionsModel.IsReclaimed = core.StringPtr("false")
+				searchOptionsModel.IsPublic = core.StringPtr("false")
+				searchOptionsModel.ImpersonateUser = core.StringPtr("testString")
+				searchOptionsModel.CanTag = core.StringPtr("false")
 				searchOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -390,11 +437,18 @@ var _ = Describe(`GlobalSearchV2`, func() {
 				searchOptionsModel.Query = core.StringPtr("testString")
 				searchOptionsModel.Fields = []string{"testString"}
 				searchOptionsModel.SearchCursor = core.StringPtr("testString")
+				searchOptionsModel.XRequestID = core.StringPtr("testString")
+				searchOptionsModel.XCorrelationID = core.StringPtr("testString")
 				searchOptionsModel.TransactionID = core.StringPtr("testString")
 				searchOptionsModel.AccountID = core.StringPtr("testString")
-				searchOptionsModel.Limit = core.Int64Ptr(int64(1))
+				searchOptionsModel.Limit = core.Int64Ptr(int64(10))
 				searchOptionsModel.Timeout = core.Int64Ptr(int64(0))
 				searchOptionsModel.Sort = []string{"testString"}
+				searchOptionsModel.IsDeleted = core.StringPtr("false")
+				searchOptionsModel.IsReclaimed = core.StringPtr("false")
+				searchOptionsModel.IsPublic = core.StringPtr("false")
+				searchOptionsModel.ImpersonateUser = core.StringPtr("testString")
+				searchOptionsModel.CanTag = core.StringPtr("false")
 				searchOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := globalSearchService.SetServiceURL("")
@@ -431,215 +485,22 @@ var _ = Describe(`GlobalSearchV2`, func() {
 				searchOptionsModel.Query = core.StringPtr("testString")
 				searchOptionsModel.Fields = []string{"testString"}
 				searchOptionsModel.SearchCursor = core.StringPtr("testString")
+				searchOptionsModel.XRequestID = core.StringPtr("testString")
+				searchOptionsModel.XCorrelationID = core.StringPtr("testString")
 				searchOptionsModel.TransactionID = core.StringPtr("testString")
 				searchOptionsModel.AccountID = core.StringPtr("testString")
-				searchOptionsModel.Limit = core.Int64Ptr(int64(1))
+				searchOptionsModel.Limit = core.Int64Ptr(int64(10))
 				searchOptionsModel.Timeout = core.Int64Ptr(int64(0))
 				searchOptionsModel.Sort = []string{"testString"}
+				searchOptionsModel.IsDeleted = core.StringPtr("false")
+				searchOptionsModel.IsReclaimed = core.StringPtr("false")
+				searchOptionsModel.IsPublic = core.StringPtr("false")
+				searchOptionsModel.ImpersonateUser = core.StringPtr("testString")
+				searchOptionsModel.CanTag = core.StringPtr("false")
 				searchOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
 				result, response, operationErr := globalSearchService.Search(searchOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-
-				// Verify a nil result
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-	})
-	Describe(`GetSupportedTypes(getSupportedTypesOptions *GetSupportedTypesOptions) - Operation response error`, func() {
-		getSupportedTypesPath := "/v2/resources/supported_types"
-		Context(`Using mock server endpoint with invalid JSON response`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(getSupportedTypesPath))
-					Expect(req.Method).To(Equal("GET"))
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprintf(res, `} this is not valid json {`)
-				}))
-			})
-			It(`Invoke GetSupportedTypes with error: Operation response processing error`, func() {
-				globalSearchService, serviceErr := globalsearchv2.NewGlobalSearchV2(&globalsearchv2.GlobalSearchV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(globalSearchService).ToNot(BeNil())
-
-				// Construct an instance of the GetSupportedTypesOptions model
-				getSupportedTypesOptionsModel := new(globalsearchv2.GetSupportedTypesOptions)
-				getSupportedTypesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-				// Expect response parsing to fail since we are receiving a text/plain response
-				result, response, operationErr := globalSearchService.GetSupportedTypes(getSupportedTypesOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).To(BeNil())
-
-				// Enable retries and test again
-				globalSearchService.EnableRetries(0, 0)
-				result, response, operationErr = globalSearchService.GetSupportedTypes(getSupportedTypesOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-	})
-	Describe(`GetSupportedTypes(getSupportedTypesOptions *GetSupportedTypesOptions)`, func() {
-		getSupportedTypesPath := "/v2/resources/supported_types"
-		Context(`Using mock server endpoint with timeout`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(getSupportedTypesPath))
-					Expect(req.Method).To(Equal("GET"))
-
-					// Sleep a short time to support a timeout test
-					time.Sleep(100 * time.Millisecond)
-
-					// Set mock response
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"supported_types": ["SupportedTypes"]}`)
-				}))
-			})
-			It(`Invoke GetSupportedTypes successfully with retries`, func() {
-				globalSearchService, serviceErr := globalsearchv2.NewGlobalSearchV2(&globalsearchv2.GlobalSearchV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(globalSearchService).ToNot(BeNil())
-				globalSearchService.EnableRetries(0, 0)
-
-				// Construct an instance of the GetSupportedTypesOptions model
-				getSupportedTypesOptionsModel := new(globalsearchv2.GetSupportedTypesOptions)
-				getSupportedTypesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation with a Context to test a timeout error
-				ctx, cancelFunc := context.WithTimeout(context.Background(), 80*time.Millisecond)
-				defer cancelFunc()
-				_, _, operationErr := globalSearchService.GetSupportedTypesWithContext(ctx, getSupportedTypesOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring("deadline exceeded"))
-
-				// Disable retries and test again
-				globalSearchService.DisableRetries()
-				result, response, operationErr := globalSearchService.GetSupportedTypes(getSupportedTypesOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).ToNot(BeNil())
-
-				// Re-test the timeout error with retries disabled
-				ctx, cancelFunc2 := context.WithTimeout(context.Background(), 80*time.Millisecond)
-				defer cancelFunc2()
-				_, _, operationErr = globalSearchService.GetSupportedTypesWithContext(ctx, getSupportedTypesOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring("deadline exceeded"))
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-		Context(`Using mock server endpoint`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Verify the contents of the request
-					Expect(req.URL.EscapedPath()).To(Equal(getSupportedTypesPath))
-					Expect(req.Method).To(Equal("GET"))
-
-					// Set mock response
-					res.Header().Set("Content-type", "application/json")
-					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"supported_types": ["SupportedTypes"]}`)
-				}))
-			})
-			It(`Invoke GetSupportedTypes successfully`, func() {
-				globalSearchService, serviceErr := globalsearchv2.NewGlobalSearchV2(&globalsearchv2.GlobalSearchV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(globalSearchService).ToNot(BeNil())
-
-				// Invoke operation with nil options model (negative test)
-				result, response, operationErr := globalSearchService.GetSupportedTypes(nil)
-				Expect(operationErr).NotTo(BeNil())
-				Expect(response).To(BeNil())
-				Expect(result).To(BeNil())
-
-				// Construct an instance of the GetSupportedTypesOptions model
-				getSupportedTypesOptionsModel := new(globalsearchv2.GetSupportedTypesOptions)
-				getSupportedTypesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation with valid options model (positive test)
-				result, response, operationErr = globalSearchService.GetSupportedTypes(getSupportedTypesOptionsModel)
-				Expect(operationErr).To(BeNil())
-				Expect(response).ToNot(BeNil())
-				Expect(result).ToNot(BeNil())
-
-			})
-			It(`Invoke GetSupportedTypes with error: Operation request error`, func() {
-				globalSearchService, serviceErr := globalsearchv2.NewGlobalSearchV2(&globalsearchv2.GlobalSearchV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(globalSearchService).ToNot(BeNil())
-
-				// Construct an instance of the GetSupportedTypesOptions model
-				getSupportedTypesOptionsModel := new(globalsearchv2.GetSupportedTypesOptions)
-				getSupportedTypesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-				// Invoke operation with empty URL (negative test)
-				err := globalSearchService.SetServiceURL("")
-				Expect(err).To(BeNil())
-				result, response, operationErr := globalSearchService.GetSupportedTypes(getSupportedTypesOptionsModel)
-				Expect(operationErr).ToNot(BeNil())
-				Expect(operationErr.Error()).To(ContainSubstring(core.ERRORMSG_SERVICE_URL_MISSING))
-				Expect(response).To(BeNil())
-				Expect(result).To(BeNil())
-			})
-			AfterEach(func() {
-				testServer.Close()
-			})
-		})
-		Context(`Using mock server endpoint with missing response body`, func() {
-			BeforeEach(func() {
-				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-					defer GinkgoRecover()
-
-					// Set success status code with no respoonse body
-					res.WriteHeader(200)
-				}))
-			})
-			It(`Invoke GetSupportedTypes successfully`, func() {
-				globalSearchService, serviceErr := globalsearchv2.NewGlobalSearchV2(&globalsearchv2.GlobalSearchV2Options{
-					URL:           testServer.URL,
-					Authenticator: &core.NoAuthAuthenticator{},
-				})
-				Expect(serviceErr).To(BeNil())
-				Expect(globalSearchService).ToNot(BeNil())
-
-				// Construct an instance of the GetSupportedTypesOptions model
-				getSupportedTypesOptionsModel := new(globalsearchv2.GetSupportedTypesOptions)
-				getSupportedTypesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
-
-				// Invoke operation
-				result, response, operationErr := globalSearchService.GetSupportedTypes(getSupportedTypesOptionsModel)
 				Expect(operationErr).To(BeNil())
 				Expect(response).ToNot(BeNil())
 
@@ -657,34 +518,41 @@ var _ = Describe(`GlobalSearchV2`, func() {
 				URL:           "http://globalsearchv2modelgenerator.com",
 				Authenticator: &core.NoAuthAuthenticator{},
 			})
-			It(`Invoke NewGetSupportedTypesOptions successfully`, func() {
-				// Construct an instance of the GetSupportedTypesOptions model
-				getSupportedTypesOptionsModel := globalSearchService.NewGetSupportedTypesOptions()
-				getSupportedTypesOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
-				Expect(getSupportedTypesOptionsModel).ToNot(BeNil())
-				Expect(getSupportedTypesOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
-			})
 			It(`Invoke NewSearchOptions successfully`, func() {
 				// Construct an instance of the SearchOptions model
 				searchOptionsModel := globalSearchService.NewSearchOptions()
 				searchOptionsModel.SetQuery("testString")
 				searchOptionsModel.SetFields([]string{"testString"})
 				searchOptionsModel.SetSearchCursor("testString")
+				searchOptionsModel.SetXRequestID("testString")
+				searchOptionsModel.SetXCorrelationID("testString")
 				searchOptionsModel.SetTransactionID("testString")
 				searchOptionsModel.SetAccountID("testString")
-				searchOptionsModel.SetLimit(int64(1))
+				searchOptionsModel.SetLimit(int64(10))
 				searchOptionsModel.SetTimeout(int64(0))
 				searchOptionsModel.SetSort([]string{"testString"})
+				searchOptionsModel.SetIsDeleted("false")
+				searchOptionsModel.SetIsReclaimed("false")
+				searchOptionsModel.SetIsPublic("false")
+				searchOptionsModel.SetImpersonateUser("testString")
+				searchOptionsModel.SetCanTag("false")
 				searchOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(searchOptionsModel).ToNot(BeNil())
 				Expect(searchOptionsModel.Query).To(Equal(core.StringPtr("testString")))
 				Expect(searchOptionsModel.Fields).To(Equal([]string{"testString"}))
 				Expect(searchOptionsModel.SearchCursor).To(Equal(core.StringPtr("testString")))
+				Expect(searchOptionsModel.XRequestID).To(Equal(core.StringPtr("testString")))
+				Expect(searchOptionsModel.XCorrelationID).To(Equal(core.StringPtr("testString")))
 				Expect(searchOptionsModel.TransactionID).To(Equal(core.StringPtr("testString")))
 				Expect(searchOptionsModel.AccountID).To(Equal(core.StringPtr("testString")))
-				Expect(searchOptionsModel.Limit).To(Equal(core.Int64Ptr(int64(1))))
+				Expect(searchOptionsModel.Limit).To(Equal(core.Int64Ptr(int64(10))))
 				Expect(searchOptionsModel.Timeout).To(Equal(core.Int64Ptr(int64(0))))
 				Expect(searchOptionsModel.Sort).To(Equal([]string{"testString"}))
+				Expect(searchOptionsModel.IsDeleted).To(Equal(core.StringPtr("false")))
+				Expect(searchOptionsModel.IsReclaimed).To(Equal(core.StringPtr("false")))
+				Expect(searchOptionsModel.IsPublic).To(Equal(core.StringPtr("false")))
+				Expect(searchOptionsModel.ImpersonateUser).To(Equal(core.StringPtr("testString")))
+				Expect(searchOptionsModel.CanTag).To(Equal(core.StringPtr("false")))
 				Expect(searchOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 		})
@@ -729,7 +597,7 @@ func CreateMockUUID(mockData string) *strfmt.UUID {
 }
 
 func CreateMockReader(mockData string) io.ReadCloser {
-	return ioutil.NopCloser(bytes.NewReader([]byte(mockData)))
+	return io.NopCloser(bytes.NewReader([]byte(mockData)))
 }
 
 func CreateMockDate(mockData string) *strfmt.Date {

@@ -1,7 +1,8 @@
+//go:build examples
 // +build examples
 
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2021, 2022.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +23,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -47,24 +48,25 @@ import (
 // in a configuration file and then:
 // export IBM_CREDENTIALS_FILE=<name of configuration file>
 //
-const externalConfigFile = "../case_management.env"
-
-var (
-	caseManagementService *casemanagementv1.CaseManagementV1
-	config                map[string]string
-	configLoaded          bool = false
-	caseNumber            string
-	attachmentID          string
-	resourceCRN           string
-)
-
-func shouldSkipTest() {
-	if !configLoaded {
-		Skip("External configuration is not available, skipping tests...")
-	}
-}
 
 var _ = Describe(`CaseManagementV1 Examples Tests`, func() {
+	const externalConfigFile = "../case_management.env"
+
+	var (
+		caseManagementService *casemanagementv1.CaseManagementV1
+		config                map[string]string
+		configLoaded          bool = false
+		caseNumber            string
+		attachmentID          string
+		resourceCRN           string
+	)
+
+	var shouldSkipTest = func() {
+		if !configLoaded {
+			Skip("External configuration is not available, skipping tests...")
+		}
+	}
+
 	Describe(`External configuration`, func() {
 		It("Successfully load the configuration", func() {
 			var err error
@@ -186,26 +188,26 @@ var _ = Describe(`CaseManagementV1 Examples Tests`, func() {
 		It(`GetCases request example`, func() {
 			fmt.Println("\nGetCases() result:")
 			// begin-getCases
+			getCasesOptions := &casemanagementv1.GetCasesOptions{
+				Search: core.StringPtr("Example"),
+			}
 
-			getCasesOptions := caseManagementService.NewGetCasesOptions()
-			getCasesOptions.SetSearch("blocker")
-			getCasesOptions.SetSort(casemanagementv1.GetCasesOptionsFieldsUpdatedAtConst)
-			getCasesOptions.SetOffset(0)
-			getCasesOptions.SetLimit(100)
-
-			caseList, response, err := caseManagementService.GetCases(getCasesOptions)
+			pager, err := caseManagementService.NewGetCasesPager(getCasesOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(caseList, "", "  ")
+
+			var allResults []casemanagementv1.Case
+			for pager.HasNext() {
+				nextPage, err := pager.GetNext()
+				if err != nil {
+					panic(err)
+				}
+				allResults = append(allResults, nextPage...)
+			}
+			b, _ := json.MarshalIndent(allResults, "", "  ")
 			fmt.Println(string(b))
-
 			// end-getCases
-
-			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(caseList).ToNot(BeNil())
-
 		})
 		It(`AddComment request example`, func() {
 			Expect(caseNumber).ToNot(BeEmpty())
@@ -320,7 +322,7 @@ var _ = Describe(`CaseManagementV1 Examples Tests`, func() {
 
 			exampleFileContent := "This is the content of the file to upload."
 
-			exampleFile, _ := caseManagementService.NewFileWithMetadata(ioutil.NopCloser(strings.NewReader(exampleFileContent)))
+			exampleFile, _ := caseManagementService.NewFileWithMetadata(io.NopCloser(strings.NewReader(exampleFileContent)))
 			exampleFile.Filename = core.StringPtr("example.log")
 			exampleFile.ContentType = core.StringPtr("application/octet-stream")
 
@@ -366,8 +368,7 @@ var _ = Describe(`CaseManagementV1 Examples Tests`, func() {
 			if result != nil {
 				defer result.Close()
 				buf := new(bytes.Buffer)
-				buf.ReadFrom(result)
-
+				_, _ = buf.ReadFrom(result)
 				fmt.Println(buf.String())
 			}
 

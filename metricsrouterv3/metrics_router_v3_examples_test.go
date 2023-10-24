@@ -1,4 +1,3 @@
-//go:build examples
 // +build examples
 
 /**
@@ -17,7 +16,7 @@
  * limitations under the License.
  */
 
-package atrackerv2_test
+package metricsrouterv3_test
 
 import (
 	"encoding/json"
@@ -25,32 +24,34 @@ import (
 	"os"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/atrackerv2"
+	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-// This file provides an example of how to use the atracker service.
+//
+// This file provides an example of how to use the metrics-router service.
 //
 // The following configuration properties are assumed to be defined:
-// ATRACKER_URL=<service base url>
-// ATRACKER_AUTH_TYPE=iam
-// ATRACKER_APIKEY=<IAM apikey>
-// ATRACKER_AUTH_URL=<IAM token service base URL - omit this if using the production environment>
+// METRICS_ROUTER_URL=<service base url>
+// METRICS_ROUTER_AUTH_TYPE=iam
+// METRICS_ROUTER_APIKEY=<IAM apikey>
+// METRICS_ROUTER_AUTH_URL=<IAM token service base URL - omit this if using the production environment>
 //
 // These configuration properties can be exported as environment variables, or stored
 // in a configuration file and then:
 // export IBM_CREDENTIALS_FILE=<name of configuration file>
-var _ = Describe(`AtrackerV2 Examples Tests`, func() {
+//
+var _ = Describe(`MetricsRouterV3 Examples Tests`, func() {
 
-	const externalConfigFile = "../atracker_v2.env"
+	const externalConfigFile = "../metrics_router_v3.env"
 
 	var (
-		atrackerService *atrackerv2.AtrackerV2
-		config          map[string]string
+		metricsRouterService *metricsrouterv3.MetricsRouterV3
+		config       map[string]string
 
 		// Variables to hold link values
-		routeIDLink  string
+		routeIDLink string
 		targetIDLink string
 	)
 
@@ -67,7 +68,7 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 			}
 
 			os.Setenv("IBM_CREDENTIALS_FILE", externalConfigFile)
-			config, err = core.GetServiceProperties(atrackerv2.DefaultServiceName)
+			config, err = core.GetServiceProperties(metricsrouterv3.DefaultServiceName)
 			if err != nil {
 				Skip("Error loading service properties, skipping examples: " + err.Error())
 			} else if len(config) == 0 {
@@ -87,9 +88,9 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 
 			// begin-common
 
-			atrackerServiceOptions := &atrackerv2.AtrackerV2Options{}
+			metricsRouterServiceOptions := &metricsrouterv3.MetricsRouterV3Options{}
 
-			atrackerService, err = atrackerv2.NewAtrackerV2UsingExternalConfig(atrackerServiceOptions)
+			metricsRouterService, err = metricsrouterv3.NewMetricsRouterV3UsingExternalConfig(metricsRouterServiceOptions)
 
 			if err != nil {
 				panic(err)
@@ -97,11 +98,11 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 
 			// end-common
 
-			Expect(atrackerService).ToNot(BeNil())
+			Expect(metricsRouterService).ToNot(BeNil())
 		})
 	})
 
-	Describe(`AtrackerV2 request examples`, func() {
+	Describe(`MetricsRouterV3 request examples`, func() {
 		BeforeEach(func() {
 			shouldSkipTest()
 		})
@@ -109,19 +110,12 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 			fmt.Println("\nCreateTarget() result:")
 			// begin-create_target
 
-			cosEndpointPrototypeModel := &atrackerv2.CosEndpointPrototype{
-				Endpoint:                core.StringPtr("s3.private.us-east.cloud-object-storage.appdomain.cloud"),
-				TargetCRN:               core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"),
-				Bucket:                  core.StringPtr("my-atracker-bucket"),
-				APIKey:                  core.StringPtr("xxxxxxxxxxxxxx"),
-				ServiceToServiceEnabled: core.BoolPtr(false),
-			}
-			createTargetOptions := atrackerService.NewCreateTargetOptions(
-				"my-cos-target",
-				"cloud_object_storage",
+			createTargetOptions := metricsRouterService.NewCreateTargetOptions(
+				"my-mr-target",
+				"crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::",
 			)
-			createTargetOptions.SetCosEndpoint(cosEndpointPrototypeModel)
-			target, response, err := atrackerService.CreateTarget(createTargetOptions)
+
+			target, response, err := metricsRouterService.CreateTarget(createTargetOptions)
 			if err != nil {
 				panic(err)
 			}
@@ -136,23 +130,32 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 
 			targetIDLink = *target.ID
 			fmt.Fprintf(GinkgoWriter, "Saved targetIDLink value: %v\n", targetIDLink)
-
 		})
 		It(`CreateRoute request example`, func() {
 			fmt.Println("\nCreateRoute() result:")
 			// begin-create_route
 
-			rulePrototypeModel := &atrackerv2.RulePrototype{
-				TargetIds: []string{targetIDLink},
-				Locations: []string{"us-south"},
+			targetIdentityModel := &metricsrouterv3.TargetIdentity{
+				ID: &targetIDLink,
 			}
 
-			createRouteOptions := atrackerService.NewCreateRouteOptions(
+			inclusionFilterPrototypeModel := &metricsrouterv3.InclusionFilterPrototype{
+				Operand: core.StringPtr("location"),
+				Operator: core.StringPtr("is"),
+				Values: []string{"us-south"},
+			}
+
+			rulePrototypeModel := &metricsrouterv3.RulePrototype{
+				Targets: []metricsrouterv3.TargetIdentity{*targetIdentityModel},
+				InclusionFilters: []metricsrouterv3.InclusionFilterPrototype{*inclusionFilterPrototypeModel},
+			}
+
+			createRouteOptions := metricsRouterService.NewCreateRouteOptions(
 				"my-route",
-				[]atrackerv2.RulePrototype{*rulePrototypeModel},
+				[]metricsrouterv3.RulePrototype{*rulePrototypeModel},
 			)
 
-			route, response, err := atrackerService.CreateRoute(createRouteOptions)
+			route, response, err := metricsRouterService.CreateRoute(createRouteOptions)
 			if err != nil {
 				panic(err)
 			}
@@ -167,37 +170,35 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 
 			routeIDLink = *route.ID
 			fmt.Fprintf(GinkgoWriter, "Saved routeIDLink value: %v\n", routeIDLink)
-
 		})
 		It(`ListTargets request example`, func() {
 			fmt.Println("\nListTargets() result:")
 			// begin-list_targets
 
-			listTargetsOptions := atrackerService.NewListTargetsOptions()
+			listTargetsOptions := metricsRouterService.NewListTargetsOptions()
 
-			targetList, response, err := atrackerService.ListTargets(listTargetsOptions)
+			targetCollection, response, err := metricsRouterService.ListTargets(listTargetsOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(targetList, "", "  ")
+			b, _ := json.MarshalIndent(targetCollection, "", "  ")
 			fmt.Println(string(b))
 
 			// end-list_targets
 
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(200))
-			Expect(targetList).ToNot(BeNil())
-
+			Expect(targetCollection).ToNot(BeNil())
 		})
 		It(`GetTarget request example`, func() {
 			fmt.Println("\nGetTarget() result:")
 			// begin-get_target
 
-			getTargetOptions := atrackerService.NewGetTargetOptions(
+			getTargetOptions := metricsRouterService.NewGetTargetOptions(
 				targetIDLink,
 			)
 
-			target, response, err := atrackerService.GetTarget(getTargetOptions)
+			target, response, err := metricsRouterService.GetTarget(getTargetOptions)
 			if err != nil {
 				panic(err)
 			}
@@ -209,81 +210,56 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(200))
 			Expect(target).ToNot(BeNil())
-
 		})
-		It(`ReplaceTarget request example`, func() {
-			fmt.Println("\nReplaceTarget() result:")
-			// begin-replace_target
+		It(`UpdateTarget request example`, func() {
+			fmt.Println("\nUpdateTarget() result:")
+			// begin-update_target
 
-			replaceTargetOptions := atrackerService.NewReplaceTargetOptions(
+			updateTargetOptions := metricsRouterService.NewUpdateTargetOptions(
 				targetIDLink,
 			)
 
-			target, response, err := atrackerService.ReplaceTarget(replaceTargetOptions)
+			target, response, err := metricsRouterService.UpdateTarget(updateTargetOptions)
 			if err != nil {
 				panic(err)
 			}
 			b, _ := json.MarshalIndent(target, "", "  ")
 			fmt.Println(string(b))
 
-			// end-replace_target
+			// end-update_target
 
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(200))
 			Expect(target).ToNot(BeNil())
-
-		})
-		It(`ValidateTarget request example`, func() {
-			fmt.Println("\nValidateTarget() result:")
-			// begin-validate_target
-
-			validateTargetOptions := atrackerService.NewValidateTargetOptions(
-				targetIDLink,
-			)
-
-			target, response, err := atrackerService.ValidateTarget(validateTargetOptions)
-			if err != nil {
-				panic(err)
-			}
-			b, _ := json.MarshalIndent(target, "", "  ")
-			fmt.Println(string(b))
-
-			// end-validate_target
-
-			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(target).ToNot(BeNil())
-
 		})
 		It(`ListRoutes request example`, func() {
 			fmt.Println("\nListRoutes() result:")
 			// begin-list_routes
 
-			listRoutesOptions := atrackerService.NewListRoutesOptions()
+			listRoutesOptions := metricsRouterService.NewListRoutesOptions()
 
-			routeList, response, err := atrackerService.ListRoutes(listRoutesOptions)
+			routeCollection, response, err := metricsRouterService.ListRoutes(listRoutesOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(routeList, "", "  ")
+			b, _ := json.MarshalIndent(routeCollection, "", "  ")
 			fmt.Println(string(b))
 
 			// end-list_routes
 
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(200))
-			Expect(routeList).ToNot(BeNil())
-
+			Expect(routeCollection).ToNot(BeNil())
 		})
 		It(`GetRoute request example`, func() {
 			fmt.Println("\nGetRoute() result:")
 			// begin-get_route
 
-			getRouteOptions := atrackerService.NewGetRouteOptions(
+			getRouteOptions := metricsRouterService.NewGetRouteOptions(
 				routeIDLink,
 			)
 
-			route, response, err := atrackerService.GetRoute(getRouteOptions)
+			route, response, err := metricsRouterService.GetRoute(getRouteOptions)
 			if err != nil {
 				panic(err)
 			}
@@ -295,89 +271,74 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(200))
 			Expect(route).ToNot(BeNil())
-
 		})
-		It(`ReplaceRoute request example`, func() {
-			fmt.Println("\nReplaceRoute() result:")
-			// begin-replace_route
+		It(`UpdateRoute request example`, func() {
+			fmt.Println("\nUpdateRoute() result:")
+			// begin-update_route
 
-			rulePrototypeModel := &atrackerv2.RulePrototype{
-				TargetIds: []string{targetIDLink},
-				Locations: []string{"us-south"},
-			}
-
-			replaceRouteOptions := atrackerService.NewReplaceRouteOptions(
+			updateRouteOptions := metricsRouterService.NewUpdateRouteOptions(
 				routeIDLink,
-				"my-route",
-				[]atrackerv2.RulePrototype{*rulePrototypeModel},
 			)
 
-			route, response, err := atrackerService.ReplaceRoute(replaceRouteOptions)
+			route, response, err := metricsRouterService.UpdateRoute(updateRouteOptions)
 			if err != nil {
 				panic(err)
 			}
 			b, _ := json.MarshalIndent(route, "", "  ")
 			fmt.Println(string(b))
 
-			// end-replace_route
+			// end-update_route
 
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(200))
 			Expect(route).ToNot(BeNil())
-
 		})
 		It(`GetSettings request example`, func() {
 			fmt.Println("\nGetSettings() result:")
 			// begin-get_settings
 
-			getSettingsOptions := atrackerService.NewGetSettingsOptions()
+			getSettingsOptions := metricsRouterService.NewGetSettingsOptions()
 
-			settings, response, err := atrackerService.GetSettings(getSettingsOptions)
+			setting, response, err := metricsRouterService.GetSettings(getSettingsOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(settings, "", "  ")
+			b, _ := json.MarshalIndent(setting, "", "  ")
 			fmt.Println(string(b))
 
 			// end-get_settings
 
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(200))
-			Expect(settings).ToNot(BeNil())
-
+			Expect(setting).ToNot(BeNil())
 		})
-		It(`PutSettings request example`, func() {
-			fmt.Println("\nPutSettings() result:")
-			// begin-put_settings
+		It(`UpdateSettings request example`, func() {
+			fmt.Println("\nUpdateSettings() result:")
+			// begin-update_settings
 
-			putSettingsOptions := atrackerService.NewPutSettingsOptions(
-				"us-south",
-				false,
-			)
+			updateSettingsOptions := metricsRouterService.NewUpdateSettingsOptions()
 
-			settings, response, err := atrackerService.PutSettings(putSettingsOptions)
+			setting, response, err := metricsRouterService.UpdateSettings(updateSettingsOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(settings, "", "  ")
+			b, _ := json.MarshalIndent(setting, "", "  ")
 			fmt.Println(string(b))
 
-			// end-put_settings
+			// end-update_settings
 
 			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(201))
-			Expect(settings).ToNot(BeNil())
-
+			Expect(response.StatusCode).To(Equal(200))
+			Expect(setting).ToNot(BeNil())
 		})
-
 		It(`DeleteRoute request example`, func() {
 			// begin-delete_route
 
-			deleteRouteOptions := atrackerService.NewDeleteRouteOptions(
+			deleteRouteOptions := metricsRouterService.NewDeleteRouteOptions(
 				routeIDLink,
 			)
 
-			response, err := atrackerService.DeleteRoute(deleteRouteOptions)
+			response, err := metricsRouterService.DeleteRoute(deleteRouteOptions)
 			if err != nil {
 				panic(err)
 			}
@@ -389,29 +350,26 @@ var _ = Describe(`AtrackerV2 Examples Tests`, func() {
 
 			Expect(err).To(BeNil())
 			Expect(response.StatusCode).To(Equal(204))
-
 		})
 		It(`DeleteTarget request example`, func() {
-			fmt.Println("\nDeleteTarget() result:")
 			// begin-delete_target
 
-			deleteTargetOptions := atrackerService.NewDeleteTargetOptions(
+			deleteTargetOptions := metricsRouterService.NewDeleteTargetOptions(
 				targetIDLink,
 			)
 
-			warningReport, response, err := atrackerService.DeleteTarget(deleteTargetOptions)
+			response, err := metricsRouterService.DeleteTarget(deleteTargetOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(warningReport, "", "  ")
-			fmt.Println(string(b))
+			if response.StatusCode != 204 {
+				fmt.Printf("\nUnexpected response status code received from DeleteTarget(): %d\n", response.StatusCode)
+			}
 
 			// end-delete_target
 
 			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(warningReport).ToNot(BeNil())
-
+			Expect(response.StatusCode).To(Equal(204))
 		})
 	})
 })

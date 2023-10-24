@@ -1,3 +1,4 @@
+//go:build examples
 // +build examples
 
 /**
@@ -21,39 +22,39 @@ package usermanagementv1_test
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/usermanagementv1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"os"
+	"time"
 )
-
-const externalConfigFile = "../user_management.env"
-
-var (
-	userManagementService      *usermanagementv1.UserManagementV1
-	userManagementAdminService *usermanagementv1.UserManagementV1
-	config                     map[string]string
-	configLoaded               bool = false
-
-	accountID     string
-	userID        string
-	memberEmail   string
-	viewerRoleID  string
-	accessGroupID string
-
-	deleteUserID string
-)
-
-func shouldSkipTest() {
-	if !configLoaded {
-		Skip("External configuration is not available, skipping tests...")
-	}
-}
 
 var _ = Describe(`UserManagementV1 Examples Tests`, func() {
+
+	const externalConfigFile = "../user_management.env"
+
+	var (
+		userManagementService      *usermanagementv1.UserManagementV1
+		userManagementAdminService *usermanagementv1.UserManagementV1
+		config                     map[string]string
+		configLoaded               bool = false
+
+		accountID     string
+		userID        string
+		memberEmail   string
+		viewerRoleID  string
+		accessGroupID string
+
+		deleteUserID string
+	)
+
+	var shouldSkipTest = func() {
+		if !configLoaded {
+			Skip("External configuration is not available, skipping tests...")
+		}
+	}
+
 	Describe(`External configuration`, func() {
 		It("Successfully load the configuration", func() {
 			var err error
@@ -187,30 +188,29 @@ var _ = Describe(`UserManagementV1 Examples Tests`, func() {
 			}
 		})
 		It(`ListUsers request example`, func() {
-			Expect(accountID).ToNot(BeEmpty())
-
 			fmt.Println("\nListUsers() result:")
 			// begin-list_users
+			listUsersOptions := &usermanagementv1.ListUsersOptions{
+				AccountID:       &accountID,
+				IncludeSettings: core.BoolPtr(true),
+				Search:          core.StringPtr("state:ACTIVE"),
+			}
 
-			listUsersOptions := userManagementService.NewListUsersOptions(
-				accountID,
-			)
-			listUsersOptions.SetState("ACTIVE")
-			listUsersOptions.SetLimit(100)
-
-			userList, response, err := userManagementService.ListUsers(listUsersOptions)
+			pager, err := userManagementService.NewUsersPager(listUsersOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(userList, "", "  ")
+			var allResults []usermanagementv1.UserProfile
+			for pager.HasNext() {
+				nextPage, err := pager.GetNext()
+				if err != nil {
+					panic(err)
+				}
+				allResults = append(allResults, nextPage...)
+			}
+			b, _ := json.MarshalIndent(allResults, "", "  ")
 			fmt.Println(string(b))
-
 			// end-list_users
-
-			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(userList).ToNot(BeNil())
-
 		})
 		It(`RemoveUser request example`, func() {
 			Expect(accountID).ToNot(BeEmpty())

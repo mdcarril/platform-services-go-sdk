@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -67,13 +66,14 @@ var _ = Describe(`UserManagementV1`, func() {
 		Context(`Using external config, construct service client instances`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"USER_MANAGEMENT_URL":       "https://usermanagementv1/api",
+				"USER_MANAGEMENT_URL": "https://usermanagementv1/api",
 				"USER_MANAGEMENT_AUTH_TYPE": "noauth",
 			}
 
 			It(`Create service client using external config successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{})
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{
+				})
 				Expect(userManagementService).ToNot(BeNil())
 				Expect(serviceErr).To(BeNil())
 				ClearTestEnvironment(testEnvironment)
@@ -102,7 +102,8 @@ var _ = Describe(`UserManagementV1`, func() {
 			})
 			It(`Create service client using external config and set url programatically successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{})
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{
+				})
 				err := userManagementService.SetServiceURL("https://testService/api")
 				Expect(err).To(BeNil())
 				Expect(userManagementService).ToNot(BeNil())
@@ -120,12 +121,13 @@ var _ = Describe(`UserManagementV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid Auth`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"USER_MANAGEMENT_URL":       "https://usermanagementv1/api",
+				"USER_MANAGEMENT_URL": "https://usermanagementv1/api",
 				"USER_MANAGEMENT_AUTH_TYPE": "someOtherAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
-			userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{})
+			userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{
+			})
 
 			It(`Instantiate service client with error`, func() {
 				Expect(userManagementService).To(BeNil())
@@ -136,7 +138,7 @@ var _ = Describe(`UserManagementV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid URL`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"USER_MANAGEMENT_AUTH_TYPE": "NOAuth",
+				"USER_MANAGEMENT_AUTH_TYPE":   "NOAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
@@ -163,7 +165,7 @@ var _ = Describe(`UserManagementV1`, func() {
 	})
 	Describe(`ListUsers(listUsersOptions *ListUsersOptions) - Operation response error`, func() {
 		listUsersPath := "/v2/accounts/testString/users"
-		Context(`Using mock server endpoint`, func() {
+		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 					defer GinkgoRecover()
@@ -171,12 +173,14 @@ var _ = Describe(`UserManagementV1`, func() {
 					// Verify the contents of the request
 					Expect(req.URL.EscapedPath()).To(Equal(listUsersPath))
 					Expect(req.Method).To(Equal("GET"))
-					Expect(req.URL.Query()["state"]).To(Equal([]string{"testString"}))
-					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(100))}))
+					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(10))}))
+					// TODO: Add check for include_settings query parameter
+					Expect(req.URL.Query()["search"]).To(Equal([]string{"testString"}))
 					Expect(req.URL.Query()["_start"]).To(Equal([]string{"testString"}))
+					Expect(req.URL.Query()["user_id"]).To(Equal([]string{"testString"}))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, `} this is not valid json {`)
+					fmt.Fprint(res, `} this is not valid json {`)
 				}))
 			})
 			It(`Invoke ListUsers with error: Operation response processing error`, func() {
@@ -190,9 +194,11 @@ var _ = Describe(`UserManagementV1`, func() {
 				// Construct an instance of the ListUsersOptions model
 				listUsersOptionsModel := new(usermanagementv1.ListUsersOptions)
 				listUsersOptionsModel.AccountID = core.StringPtr("testString")
-				listUsersOptionsModel.State = core.StringPtr("testString")
-				listUsersOptionsModel.Limit = core.Int64Ptr(int64(100))
+				listUsersOptionsModel.Limit = core.Int64Ptr(int64(10))
+				listUsersOptionsModel.IncludeSettings = core.BoolPtr(true)
+				listUsersOptionsModel.Search = core.StringPtr("testString")
 				listUsersOptionsModel.Start = core.StringPtr("testString")
+				listUsersOptionsModel.UserID = core.StringPtr("testString")
 				listUsersOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := userManagementService.ListUsers(listUsersOptionsModel)
@@ -212,7 +218,6 @@ var _ = Describe(`UserManagementV1`, func() {
 			})
 		})
 	})
-
 	Describe(`ListUsers(listUsersOptions *ListUsersOptions)`, func() {
 		listUsersPath := "/v2/accounts/testString/users"
 		Context(`Using mock server endpoint with timeout`, func() {
@@ -224,16 +229,18 @@ var _ = Describe(`UserManagementV1`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(listUsersPath))
 					Expect(req.Method).To(Equal("GET"))
 
-					Expect(req.URL.Query()["state"]).To(Equal([]string{"testString"}))
-					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(100))}))
+					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(10))}))
+					// TODO: Add check for include_settings query parameter
+					Expect(req.URL.Query()["search"]).To(Equal([]string{"testString"}))
 					Expect(req.URL.Query()["_start"]).To(Equal([]string{"testString"}))
+					Expect(req.URL.Query()["user_id"]).To(Equal([]string{"testString"}))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"total_results": 12, "limit": 5, "first_url": "FirstURL", "next_url": "NextURL", "resources": [{"id": "ID", "iam_id": "IamID", "realm": "Realm", "user_id": "UserID", "firstname": "Firstname", "lastname": "Lastname", "state": "State", "email": "Email", "phonenumber": "Phonenumber", "altphonenumber": "Altphonenumber", "photo": "Photo", "account_id": "AccountID"}]}`)
+					fmt.Fprintf(res, "%s", `{"total_results": 12, "limit": 5, "first_url": "FirstURL", "next_url": "NextURL", "resources": [{"id": "ID", "iam_id": "IamID", "realm": "Realm", "user_id": "UserID", "firstname": "Firstname", "lastname": "Lastname", "state": "State", "email": "Email", "phonenumber": "Phonenumber", "altphonenumber": "Altphonenumber", "photo": "Photo", "account_id": "AccountID", "added_on": "AddedOn"}]}`)
 				}))
 			})
 			It(`Invoke ListUsers successfully with retries`, func() {
@@ -248,9 +255,11 @@ var _ = Describe(`UserManagementV1`, func() {
 				// Construct an instance of the ListUsersOptions model
 				listUsersOptionsModel := new(usermanagementv1.ListUsersOptions)
 				listUsersOptionsModel.AccountID = core.StringPtr("testString")
-				listUsersOptionsModel.State = core.StringPtr("testString")
-				listUsersOptionsModel.Limit = core.Int64Ptr(int64(100))
+				listUsersOptionsModel.Limit = core.Int64Ptr(int64(10))
+				listUsersOptionsModel.IncludeSettings = core.BoolPtr(true)
+				listUsersOptionsModel.Search = core.StringPtr("testString")
 				listUsersOptionsModel.Start = core.StringPtr("testString")
+				listUsersOptionsModel.UserID = core.StringPtr("testString")
 				listUsersOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -287,13 +296,15 @@ var _ = Describe(`UserManagementV1`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(listUsersPath))
 					Expect(req.Method).To(Equal("GET"))
 
-					Expect(req.URL.Query()["state"]).To(Equal([]string{"testString"}))
-					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(100))}))
+					Expect(req.URL.Query()["limit"]).To(Equal([]string{fmt.Sprint(int64(10))}))
+					// TODO: Add check for include_settings query parameter
+					Expect(req.URL.Query()["search"]).To(Equal([]string{"testString"}))
 					Expect(req.URL.Query()["_start"]).To(Equal([]string{"testString"}))
+					Expect(req.URL.Query()["user_id"]).To(Equal([]string{"testString"}))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"total_results": 12, "limit": 5, "first_url": "FirstURL", "next_url": "NextURL", "resources": [{"id": "ID", "iam_id": "IamID", "realm": "Realm", "user_id": "UserID", "firstname": "Firstname", "lastname": "Lastname", "state": "State", "email": "Email", "phonenumber": "Phonenumber", "altphonenumber": "Altphonenumber", "photo": "Photo", "account_id": "AccountID"}]}`)
+					fmt.Fprintf(res, "%s", `{"total_results": 12, "limit": 5, "first_url": "FirstURL", "next_url": "NextURL", "resources": [{"id": "ID", "iam_id": "IamID", "realm": "Realm", "user_id": "UserID", "firstname": "Firstname", "lastname": "Lastname", "state": "State", "email": "Email", "phonenumber": "Phonenumber", "altphonenumber": "Altphonenumber", "photo": "Photo", "account_id": "AccountID", "added_on": "AddedOn"}]}`)
 				}))
 			})
 			It(`Invoke ListUsers successfully`, func() {
@@ -313,9 +324,11 @@ var _ = Describe(`UserManagementV1`, func() {
 				// Construct an instance of the ListUsersOptions model
 				listUsersOptionsModel := new(usermanagementv1.ListUsersOptions)
 				listUsersOptionsModel.AccountID = core.StringPtr("testString")
-				listUsersOptionsModel.State = core.StringPtr("testString")
-				listUsersOptionsModel.Limit = core.Int64Ptr(int64(100))
+				listUsersOptionsModel.Limit = core.Int64Ptr(int64(10))
+				listUsersOptionsModel.IncludeSettings = core.BoolPtr(true)
+				listUsersOptionsModel.Search = core.StringPtr("testString")
 				listUsersOptionsModel.Start = core.StringPtr("testString")
+				listUsersOptionsModel.UserID = core.StringPtr("testString")
 				listUsersOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -336,9 +349,11 @@ var _ = Describe(`UserManagementV1`, func() {
 				// Construct an instance of the ListUsersOptions model
 				listUsersOptionsModel := new(usermanagementv1.ListUsersOptions)
 				listUsersOptionsModel.AccountID = core.StringPtr("testString")
-				listUsersOptionsModel.State = core.StringPtr("testString")
-				listUsersOptionsModel.Limit = core.Int64Ptr(int64(100))
+				listUsersOptionsModel.Limit = core.Int64Ptr(int64(10))
+				listUsersOptionsModel.IncludeSettings = core.BoolPtr(true)
+				listUsersOptionsModel.Search = core.StringPtr("testString")
 				listUsersOptionsModel.Start = core.StringPtr("testString")
+				listUsersOptionsModel.UserID = core.StringPtr("testString")
 				listUsersOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := userManagementService.SetServiceURL("")
@@ -360,10 +375,152 @@ var _ = Describe(`UserManagementV1`, func() {
 				testServer.Close()
 			})
 		})
+		Context(`Using mock server endpoint with missing response body`, func() {
+			BeforeEach(func() {
+				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					defer GinkgoRecover()
+
+					// Set success status code with no respoonse body
+					res.WriteHeader(200)
+				}))
+			})
+			It(`Invoke ListUsers successfully`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				// Construct an instance of the ListUsersOptions model
+				listUsersOptionsModel := new(usermanagementv1.ListUsersOptions)
+				listUsersOptionsModel.AccountID = core.StringPtr("testString")
+				listUsersOptionsModel.Limit = core.Int64Ptr(int64(10))
+				listUsersOptionsModel.IncludeSettings = core.BoolPtr(true)
+				listUsersOptionsModel.Search = core.StringPtr("testString")
+				listUsersOptionsModel.Start = core.StringPtr("testString")
+				listUsersOptionsModel.UserID = core.StringPtr("testString")
+				listUsersOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+
+				// Invoke operation
+				result, response, operationErr := userManagementService.ListUsers(listUsersOptionsModel)
+				Expect(operationErr).To(BeNil())
+				Expect(response).ToNot(BeNil())
+
+				// Verify a nil result
+				Expect(result).To(BeNil())
+			})
+			AfterEach(func() {
+				testServer.Close()
+			})
+		})
+		Context(`Test pagination helper method on response`, func() {
+			It(`Invoke GetNextStart successfully`, func() {
+				responseObject := new(usermanagementv1.UserList)
+				responseObject.NextURL = core.StringPtr("ibm.com?_start=abc-123")
+	
+				value, err := responseObject.GetNextStart()
+				Expect(err).To(BeNil())
+				Expect(value).To(Equal(core.StringPtr("abc-123")))
+			})
+			It(`Invoke GetNextStart without a "NextURL" property in the response`, func() {
+				responseObject := new(usermanagementv1.UserList)
+	
+				value, err := responseObject.GetNextStart()
+				Expect(err).To(BeNil())
+				Expect(value).To(BeNil())
+			})
+			It(`Invoke GetNextStart without any query params in the "NextURL" URL`, func() {
+				responseObject := new(usermanagementv1.UserList)
+				responseObject.NextURL = core.StringPtr("ibm.com")
+	
+				value, err := responseObject.GetNextStart()
+				Expect(err).To(BeNil())
+				Expect(value).To(BeNil())
+			})
+		})
+		Context(`Using mock server endpoint - paginated response`, func() {
+			BeforeEach(func() {
+				var requestNumber int = 0
+				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					defer GinkgoRecover()
+
+					// Verify the contents of the request
+					Expect(req.URL.EscapedPath()).To(Equal(listUsersPath))
+					Expect(req.Method).To(Equal("GET"))
+
+					// Set mock response
+					res.Header().Set("Content-type", "application/json")
+					res.WriteHeader(200)
+					requestNumber++
+					if requestNumber == 1 {
+						fmt.Fprintf(res, "%s", `{"total_count":2,"limit":1,"next_url":"https://myhost.com/somePath?_start=1","resources":[{"id":"ID","iam_id":"IamID","realm":"Realm","user_id":"UserID","firstname":"Firstname","lastname":"Lastname","state":"State","email":"Email","phonenumber":"Phonenumber","altphonenumber":"Altphonenumber","photo":"Photo","account_id":"AccountID","added_on":"AddedOn"}]}`)
+					} else if requestNumber == 2 {
+						fmt.Fprintf(res, "%s", `{"total_count":2,"limit":1,"resources":[{"id":"ID","iam_id":"IamID","realm":"Realm","user_id":"UserID","firstname":"Firstname","lastname":"Lastname","state":"State","email":"Email","phonenumber":"Phonenumber","altphonenumber":"Altphonenumber","photo":"Photo","account_id":"AccountID","added_on":"AddedOn"}]}`)
+					} else {
+						res.WriteHeader(400)
+					}
+				}))
+			})
+			It(`Use UsersPager.GetNext successfully`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				listUsersOptionsModel := &usermanagementv1.ListUsersOptions{
+					AccountID: core.StringPtr("testString"),
+					Limit: core.Int64Ptr(int64(10)),
+					IncludeSettings: core.BoolPtr(true),
+					Search: core.StringPtr("testString"),
+					UserID: core.StringPtr("testString"),
+				}
+
+				pager, err := userManagementService.NewUsersPager(listUsersOptionsModel)
+				Expect(err).To(BeNil())
+				Expect(pager).ToNot(BeNil())
+
+				var allResults []usermanagementv1.UserProfile
+				for pager.HasNext() {
+					nextPage, err := pager.GetNext()
+					Expect(err).To(BeNil())
+					Expect(nextPage).ToNot(BeNil())
+					allResults = append(allResults, nextPage...)
+				}
+				Expect(len(allResults)).To(Equal(2))
+			})
+			It(`Use UsersPager.GetAll successfully`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				listUsersOptionsModel := &usermanagementv1.ListUsersOptions{
+					AccountID: core.StringPtr("testString"),
+					Limit: core.Int64Ptr(int64(10)),
+					IncludeSettings: core.BoolPtr(true),
+					Search: core.StringPtr("testString"),
+					UserID: core.StringPtr("testString"),
+				}
+
+				pager, err := userManagementService.NewUsersPager(listUsersOptionsModel)
+				Expect(err).To(BeNil())
+				Expect(pager).ToNot(BeNil())
+
+				allResults, err := pager.GetAll()
+				Expect(err).To(BeNil())
+				Expect(allResults).ToNot(BeNil())
+				Expect(len(allResults)).To(Equal(2))
+			})
+		})
 	})
 	Describe(`InviteUsers(inviteUsersOptions *InviteUsersOptions) - Operation response error`, func() {
 		inviteUsersPath := "/v2/accounts/testString/users"
-		Context(`Using mock server endpoint`, func() {
+		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 					defer GinkgoRecover()
@@ -373,7 +530,7 @@ var _ = Describe(`UserManagementV1`, func() {
 					Expect(req.Method).To(Equal("POST"))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(202)
-					fmt.Fprintf(res, `} this is not valid json {`)
+					fmt.Fprint(res, `} this is not valid json {`)
 				}))
 			})
 			It(`Invoke InviteUsers with error: Operation response processing error`, func() {
@@ -433,7 +590,6 @@ var _ = Describe(`UserManagementV1`, func() {
 			})
 		})
 	})
-
 	Describe(`InviteUsers(inviteUsersOptions *InviteUsersOptions)`, func() {
 		inviteUsersPath := "/v2/accounts/testString/users"
 		Context(`Using mock server endpoint with timeout`, func() {
@@ -679,10 +835,71 @@ var _ = Describe(`UserManagementV1`, func() {
 				testServer.Close()
 			})
 		})
+		Context(`Using mock server endpoint with missing response body`, func() {
+			BeforeEach(func() {
+				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					defer GinkgoRecover()
+
+					// Set success status code with no respoonse body
+					res.WriteHeader(202)
+				}))
+			})
+			It(`Invoke InviteUsers successfully`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				// Construct an instance of the InviteUser model
+				inviteUserModel := new(usermanagementv1.InviteUser)
+				inviteUserModel.Email = core.StringPtr("testString")
+				inviteUserModel.AccountRole = core.StringPtr("testString")
+
+				// Construct an instance of the Role model
+				roleModel := new(usermanagementv1.Role)
+				roleModel.RoleID = core.StringPtr("testString")
+
+				// Construct an instance of the Attribute model
+				attributeModel := new(usermanagementv1.Attribute)
+				attributeModel.Name = core.StringPtr("testString")
+				attributeModel.Value = core.StringPtr("testString")
+
+				// Construct an instance of the Resource model
+				resourceModel := new(usermanagementv1.Resource)
+				resourceModel.Attributes = []usermanagementv1.Attribute{*attributeModel}
+
+				// Construct an instance of the InviteUserIamPolicy model
+				inviteUserIamPolicyModel := new(usermanagementv1.InviteUserIamPolicy)
+				inviteUserIamPolicyModel.Type = core.StringPtr("testString")
+				inviteUserIamPolicyModel.Roles = []usermanagementv1.Role{*roleModel}
+				inviteUserIamPolicyModel.Resources = []usermanagementv1.Resource{*resourceModel}
+
+				// Construct an instance of the InviteUsersOptions model
+				inviteUsersOptionsModel := new(usermanagementv1.InviteUsersOptions)
+				inviteUsersOptionsModel.AccountID = core.StringPtr("testString")
+				inviteUsersOptionsModel.Users = []usermanagementv1.InviteUser{*inviteUserModel}
+				inviteUsersOptionsModel.IamPolicy = []usermanagementv1.InviteUserIamPolicy{*inviteUserIamPolicyModel}
+				inviteUsersOptionsModel.AccessGroups = []string{"testString"}
+				inviteUsersOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+
+				// Invoke operation
+				result, response, operationErr := userManagementService.InviteUsers(inviteUsersOptionsModel)
+				Expect(operationErr).To(BeNil())
+				Expect(response).ToNot(BeNil())
+
+				// Verify a nil result
+				Expect(result).To(BeNil())
+			})
+			AfterEach(func() {
+				testServer.Close()
+			})
+		})
 	})
 	Describe(`GetUserProfile(getUserProfileOptions *GetUserProfileOptions) - Operation response error`, func() {
 		getUserProfilePath := "/v2/accounts/testString/users/testString"
-		Context(`Using mock server endpoint`, func() {
+		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 					defer GinkgoRecover()
@@ -690,9 +907,10 @@ var _ = Describe(`UserManagementV1`, func() {
 					// Verify the contents of the request
 					Expect(req.URL.EscapedPath()).To(Equal(getUserProfilePath))
 					Expect(req.Method).To(Equal("GET"))
+					Expect(req.URL.Query()["include_activity"]).To(Equal([]string{"testString"}))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, `} this is not valid json {`)
+					fmt.Fprint(res, `} this is not valid json {`)
 				}))
 			})
 			It(`Invoke GetUserProfile with error: Operation response processing error`, func() {
@@ -707,6 +925,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				getUserProfileOptionsModel := new(usermanagementv1.GetUserProfileOptions)
 				getUserProfileOptionsModel.AccountID = core.StringPtr("testString")
 				getUserProfileOptionsModel.IamID = core.StringPtr("testString")
+				getUserProfileOptionsModel.IncludeActivity = core.StringPtr("testString")
 				getUserProfileOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := userManagementService.GetUserProfile(getUserProfileOptionsModel)
@@ -726,7 +945,6 @@ var _ = Describe(`UserManagementV1`, func() {
 			})
 		})
 	})
-
 	Describe(`GetUserProfile(getUserProfileOptions *GetUserProfileOptions)`, func() {
 		getUserProfilePath := "/v2/accounts/testString/users/testString"
 		Context(`Using mock server endpoint with timeout`, func() {
@@ -738,13 +956,14 @@ var _ = Describe(`UserManagementV1`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(getUserProfilePath))
 					Expect(req.Method).To(Equal("GET"))
 
+					Expect(req.URL.Query()["include_activity"]).To(Equal([]string{"testString"}))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"id": "ID", "iam_id": "IamID", "realm": "Realm", "user_id": "UserID", "firstname": "Firstname", "lastname": "Lastname", "state": "State", "email": "Email", "phonenumber": "Phonenumber", "altphonenumber": "Altphonenumber", "photo": "Photo", "account_id": "AccountID"}`)
+					fmt.Fprintf(res, "%s", `{"id": "ID", "iam_id": "IamID", "realm": "Realm", "user_id": "UserID", "firstname": "Firstname", "lastname": "Lastname", "state": "State", "email": "Email", "phonenumber": "Phonenumber", "altphonenumber": "Altphonenumber", "photo": "Photo", "account_id": "AccountID", "added_on": "AddedOn"}`)
 				}))
 			})
 			It(`Invoke GetUserProfile successfully with retries`, func() {
@@ -760,6 +979,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				getUserProfileOptionsModel := new(usermanagementv1.GetUserProfileOptions)
 				getUserProfileOptionsModel.AccountID = core.StringPtr("testString")
 				getUserProfileOptionsModel.IamID = core.StringPtr("testString")
+				getUserProfileOptionsModel.IncludeActivity = core.StringPtr("testString")
 				getUserProfileOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -796,10 +1016,11 @@ var _ = Describe(`UserManagementV1`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(getUserProfilePath))
 					Expect(req.Method).To(Equal("GET"))
 
+					Expect(req.URL.Query()["include_activity"]).To(Equal([]string{"testString"}))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, "%s", `{"id": "ID", "iam_id": "IamID", "realm": "Realm", "user_id": "UserID", "firstname": "Firstname", "lastname": "Lastname", "state": "State", "email": "Email", "phonenumber": "Phonenumber", "altphonenumber": "Altphonenumber", "photo": "Photo", "account_id": "AccountID"}`)
+					fmt.Fprintf(res, "%s", `{"id": "ID", "iam_id": "IamID", "realm": "Realm", "user_id": "UserID", "firstname": "Firstname", "lastname": "Lastname", "state": "State", "email": "Email", "phonenumber": "Phonenumber", "altphonenumber": "Altphonenumber", "photo": "Photo", "account_id": "AccountID", "added_on": "AddedOn"}`)
 				}))
 			})
 			It(`Invoke GetUserProfile successfully`, func() {
@@ -820,6 +1041,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				getUserProfileOptionsModel := new(usermanagementv1.GetUserProfileOptions)
 				getUserProfileOptionsModel.AccountID = core.StringPtr("testString")
 				getUserProfileOptionsModel.IamID = core.StringPtr("testString")
+				getUserProfileOptionsModel.IncludeActivity = core.StringPtr("testString")
 				getUserProfileOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -841,6 +1063,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				getUserProfileOptionsModel := new(usermanagementv1.GetUserProfileOptions)
 				getUserProfileOptionsModel.AccountID = core.StringPtr("testString")
 				getUserProfileOptionsModel.IamID = core.StringPtr("testString")
+				getUserProfileOptionsModel.IncludeActivity = core.StringPtr("testString")
 				getUserProfileOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := userManagementService.SetServiceURL("")
@@ -862,8 +1085,43 @@ var _ = Describe(`UserManagementV1`, func() {
 				testServer.Close()
 			})
 		})
-	})
+		Context(`Using mock server endpoint with missing response body`, func() {
+			BeforeEach(func() {
+				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					defer GinkgoRecover()
 
+					// Set success status code with no respoonse body
+					res.WriteHeader(200)
+				}))
+			})
+			It(`Invoke GetUserProfile successfully`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				// Construct an instance of the GetUserProfileOptions model
+				getUserProfileOptionsModel := new(usermanagementv1.GetUserProfileOptions)
+				getUserProfileOptionsModel.AccountID = core.StringPtr("testString")
+				getUserProfileOptionsModel.IamID = core.StringPtr("testString")
+				getUserProfileOptionsModel.IncludeActivity = core.StringPtr("testString")
+				getUserProfileOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+
+				// Invoke operation
+				result, response, operationErr := userManagementService.GetUserProfile(getUserProfileOptionsModel)
+				Expect(operationErr).To(BeNil())
+				Expect(response).ToNot(BeNil())
+
+				// Verify a nil result
+				Expect(result).To(BeNil())
+			})
+			AfterEach(func() {
+				testServer.Close()
+			})
+		})
+	})
 	Describe(`UpdateUserProfile(updateUserProfileOptions *UpdateUserProfileOptions)`, func() {
 		updateUserProfilePath := "/v2/accounts/testString/users/testString"
 		Context(`Using mock server endpoint`, func() {
@@ -891,6 +1149,7 @@ var _ = Describe(`UserManagementV1`, func() {
 					}
 					fmt.Fprintf(GinkgoWriter, "  Request body: %s", bodyBuf.String())
 
+					Expect(req.URL.Query()["include_activity"]).To(Equal([]string{"testString"}))
 					res.WriteHeader(204)
 				}))
 			})
@@ -918,6 +1177,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				updateUserProfileOptionsModel.Phonenumber = core.StringPtr("testString")
 				updateUserProfileOptionsModel.Altphonenumber = core.StringPtr("testString")
 				updateUserProfileOptionsModel.Photo = core.StringPtr("testString")
+				updateUserProfileOptionsModel.IncludeActivity = core.StringPtr("testString")
 				updateUserProfileOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -944,6 +1204,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				updateUserProfileOptionsModel.Phonenumber = core.StringPtr("testString")
 				updateUserProfileOptionsModel.Altphonenumber = core.StringPtr("testString")
 				updateUserProfileOptionsModel.Photo = core.StringPtr("testString")
+				updateUserProfileOptionsModel.IncludeActivity = core.StringPtr("testString")
 				updateUserProfileOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := userManagementService.SetServiceURL("")
@@ -964,7 +1225,6 @@ var _ = Describe(`UserManagementV1`, func() {
 			})
 		})
 	})
-
 	Describe(`RemoveUser(removeUserOptions *RemoveUserOptions)`, func() {
 		removeUserPath := "/v2/accounts/testString/users/testString"
 		Context(`Using mock server endpoint`, func() {
@@ -976,6 +1236,7 @@ var _ = Describe(`UserManagementV1`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(removeUserPath))
 					Expect(req.Method).To(Equal("DELETE"))
 
+					Expect(req.URL.Query()["include_activity"]).To(Equal([]string{"testString"}))
 					res.WriteHeader(204)
 				}))
 			})
@@ -996,6 +1257,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				removeUserOptionsModel := new(usermanagementv1.RemoveUserOptions)
 				removeUserOptionsModel.AccountID = core.StringPtr("testString")
 				removeUserOptionsModel.IamID = core.StringPtr("testString")
+				removeUserOptionsModel.IncludeActivity = core.StringPtr("testString")
 				removeUserOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -1015,6 +1277,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				removeUserOptionsModel := new(usermanagementv1.RemoveUserOptions)
 				removeUserOptionsModel.AccountID = core.StringPtr("testString")
 				removeUserOptionsModel.IamID = core.StringPtr("testString")
+				removeUserOptionsModel.IncludeActivity = core.StringPtr("testString")
 				removeUserOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := userManagementService.SetServiceURL("")
@@ -1035,134 +1298,157 @@ var _ = Describe(`UserManagementV1`, func() {
 			})
 		})
 	})
-	Describe(`Service constructor tests`, func() {
-		It(`Instantiate service client`, func() {
-			userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
-				Authenticator: &core.NoAuthAuthenticator{},
-			})
-			Expect(userManagementService).ToNot(BeNil())
-			Expect(serviceErr).To(BeNil())
-		})
-		It(`Instantiate service client with error: Invalid URL`, func() {
-			userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
-				URL: "{BAD_URL_STRING",
-			})
-			Expect(userManagementService).To(BeNil())
-			Expect(serviceErr).ToNot(BeNil())
-		})
-		It(`Instantiate service client with error: Invalid Auth`, func() {
-			userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
-				URL: "https://usermanagementv1/api",
-				Authenticator: &core.BasicAuthenticator{
-					Username: "",
-					Password: "",
-				},
-			})
-			Expect(userManagementService).To(BeNil())
-			Expect(serviceErr).ToNot(BeNil())
-		})
-	})
-	Describe(`Service constructor tests using external config`, func() {
-		Context(`Using external config, construct service client instances`, func() {
-			// Map containing environment variables used in testing.
-			var testEnvironment = map[string]string{
-				"USER_MANAGEMENT_URL":       "https://usermanagementv1/api",
-				"USER_MANAGEMENT_AUTH_TYPE": "noauth",
-			}
+	Describe(`Accept(acceptOptions *AcceptOptions)`, func() {
+		acceptPath := "/v2/users/accept"
+		Context(`Using mock server endpoint`, func() {
+			BeforeEach(func() {
+				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					defer GinkgoRecover()
 
-			It(`Create service client using external config successfully`, func() {
-				SetTestEnvironment(testEnvironment)
-				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{})
-				Expect(userManagementService).ToNot(BeNil())
-				Expect(serviceErr).To(BeNil())
-				ClearTestEnvironment(testEnvironment)
+					// Verify the contents of the request
+					Expect(req.URL.EscapedPath()).To(Equal(acceptPath))
+					Expect(req.Method).To(Equal("POST"))
 
-				clone := userManagementService.Clone()
-				Expect(clone).ToNot(BeNil())
-				Expect(clone.Service != userManagementService.Service).To(BeTrue())
-				Expect(clone.GetServiceURL()).To(Equal(userManagementService.GetServiceURL()))
-				Expect(clone.Service.Options.Authenticator).To(Equal(userManagementService.Service.Options.Authenticator))
+					// For gzip-disabled operation, verify Content-Encoding is not set.
+					Expect(req.Header.Get("Content-Encoding")).To(BeEmpty())
+
+					// If there is a body, then make sure we can read it
+					bodyBuf := new(bytes.Buffer)
+					if req.Header.Get("Content-Encoding") == "gzip" {
+						body, err := core.NewGzipDecompressionReader(req.Body)
+						Expect(err).To(BeNil())
+						_, err = bodyBuf.ReadFrom(body)
+						Expect(err).To(BeNil())
+					} else {
+						_, err := bodyBuf.ReadFrom(req.Body)
+						Expect(err).To(BeNil())
+					}
+					fmt.Fprintf(GinkgoWriter, "  Request body: %s", bodyBuf.String())
+
+					res.WriteHeader(202)
+				}))
 			})
-			It(`Create service client using external config and set url from constructor successfully`, func() {
-				SetTestEnvironment(testEnvironment)
-				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{
-					URL: "https://testService/api",
+			It(`Invoke Accept successfully`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
 				})
-				Expect(userManagementService).ToNot(BeNil())
 				Expect(serviceErr).To(BeNil())
-				Expect(userManagementService.Service.GetServiceURL()).To(Equal("https://testService/api"))
-				ClearTestEnvironment(testEnvironment)
+				Expect(userManagementService).ToNot(BeNil())
 
-				clone := userManagementService.Clone()
-				Expect(clone).ToNot(BeNil())
-				Expect(clone.Service != userManagementService.Service).To(BeTrue())
-				Expect(clone.GetServiceURL()).To(Equal(userManagementService.GetServiceURL()))
-				Expect(clone.Service.Options.Authenticator).To(Equal(userManagementService.Service.Options.Authenticator))
+				// Invoke operation with nil options model (negative test)
+				response, operationErr := userManagementService.Accept(nil)
+				Expect(operationErr).NotTo(BeNil())
+				Expect(response).To(BeNil())
+
+				// Construct an instance of the AcceptOptions model
+				acceptOptionsModel := new(usermanagementv1.AcceptOptions)
+				acceptOptionsModel.AccountID = core.StringPtr("testString")
+				acceptOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+
+				// Invoke operation with valid options model (positive test)
+				response, operationErr = userManagementService.Accept(acceptOptionsModel)
+				Expect(operationErr).To(BeNil())
+				Expect(response).ToNot(BeNil())
 			})
-			It(`Create service client using external config and set url programatically successfully`, func() {
-				SetTestEnvironment(testEnvironment)
-				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{})
-				err := userManagementService.SetServiceURL("https://testService/api")
+			It(`Invoke Accept with error: Operation request error`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				// Construct an instance of the AcceptOptions model
+				acceptOptionsModel := new(usermanagementv1.AcceptOptions)
+				acceptOptionsModel.AccountID = core.StringPtr("testString")
+				acceptOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+				// Invoke operation with empty URL (negative test)
+				err := userManagementService.SetServiceURL("")
 				Expect(err).To(BeNil())
-				Expect(userManagementService).ToNot(BeNil())
-				Expect(serviceErr).To(BeNil())
-				Expect(userManagementService.Service.GetServiceURL()).To(Equal("https://testService/api"))
-				ClearTestEnvironment(testEnvironment)
-
-				clone := userManagementService.Clone()
-				Expect(clone).ToNot(BeNil())
-				Expect(clone.Service != userManagementService.Service).To(BeTrue())
-				Expect(clone.GetServiceURL()).To(Equal(userManagementService.GetServiceURL()))
-				Expect(clone.Service.Options.Authenticator).To(Equal(userManagementService.Service.Options.Authenticator))
+				response, operationErr := userManagementService.Accept(acceptOptionsModel)
+				Expect(operationErr).ToNot(BeNil())
+				Expect(operationErr.Error()).To(ContainSubstring(core.ERRORMSG_SERVICE_URL_MISSING))
+				Expect(response).To(BeNil())
 			})
-		})
-		Context(`Using external config, construct service client instances with error: Invalid Auth`, func() {
-			// Map containing environment variables used in testing.
-			var testEnvironment = map[string]string{
-				"USER_MANAGEMENT_URL":       "https://usermanagementv1/api",
-				"USER_MANAGEMENT_AUTH_TYPE": "someOtherAuth",
-			}
-
-			SetTestEnvironment(testEnvironment)
-			userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{})
-
-			It(`Instantiate service client with error`, func() {
-				Expect(userManagementService).To(BeNil())
-				Expect(serviceErr).ToNot(BeNil())
-				ClearTestEnvironment(testEnvironment)
-			})
-		})
-		Context(`Using external config, construct service client instances with error: Invalid URL`, func() {
-			// Map containing environment variables used in testing.
-			var testEnvironment = map[string]string{
-				"USER_MANAGEMENT_AUTH_TYPE": "NOAuth",
-			}
-
-			SetTestEnvironment(testEnvironment)
-			userManagementService, serviceErr := usermanagementv1.NewUserManagementV1UsingExternalConfig(&usermanagementv1.UserManagementV1Options{
-				URL: "{BAD_URL_STRING",
-			})
-
-			It(`Instantiate service client with error`, func() {
-				Expect(userManagementService).To(BeNil())
-				Expect(serviceErr).ToNot(BeNil())
-				ClearTestEnvironment(testEnvironment)
+			AfterEach(func() {
+				testServer.Close()
 			})
 		})
 	})
-	Describe(`Regional endpoint tests`, func() {
-		It(`GetServiceURLForRegion(region string)`, func() {
-			var url string
-			var err error
-			url, err = usermanagementv1.GetServiceURLForRegion("INVALID_REGION")
-			Expect(url).To(BeEmpty())
-			Expect(err).ToNot(BeNil())
-			fmt.Fprintf(GinkgoWriter, "Expected error: %s\n", err.Error())
+	Describe(`V3RemoveUser(v3RemoveUserOptions *V3RemoveUserOptions)`, func() {
+		v3RemoveUserPath := "/v3/accounts/testString/users/testString"
+		Context(`Using mock server endpoint`, func() {
+			BeforeEach(func() {
+				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					defer GinkgoRecover()
+
+					// Verify the contents of the request
+					Expect(req.URL.EscapedPath()).To(Equal(v3RemoveUserPath))
+					Expect(req.Method).To(Equal("DELETE"))
+
+					res.WriteHeader(202)
+				}))
+			})
+			It(`Invoke V3RemoveUser successfully`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				// Invoke operation with nil options model (negative test)
+				response, operationErr := userManagementService.V3RemoveUser(nil)
+				Expect(operationErr).NotTo(BeNil())
+				Expect(response).To(BeNil())
+
+				// Construct an instance of the V3RemoveUserOptions model
+				v3RemoveUserOptionsModel := new(usermanagementv1.V3RemoveUserOptions)
+				v3RemoveUserOptionsModel.AccountID = core.StringPtr("testString")
+				v3RemoveUserOptionsModel.IamID = core.StringPtr("testString")
+				v3RemoveUserOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+
+				// Invoke operation with valid options model (positive test)
+				response, operationErr = userManagementService.V3RemoveUser(v3RemoveUserOptionsModel)
+				Expect(operationErr).To(BeNil())
+				Expect(response).ToNot(BeNil())
+			})
+			It(`Invoke V3RemoveUser with error: Operation validation and request error`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				// Construct an instance of the V3RemoveUserOptions model
+				v3RemoveUserOptionsModel := new(usermanagementv1.V3RemoveUserOptions)
+				v3RemoveUserOptionsModel.AccountID = core.StringPtr("testString")
+				v3RemoveUserOptionsModel.IamID = core.StringPtr("testString")
+				v3RemoveUserOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+				// Invoke operation with empty URL (negative test)
+				err := userManagementService.SetServiceURL("")
+				Expect(err).To(BeNil())
+				response, operationErr := userManagementService.V3RemoveUser(v3RemoveUserOptionsModel)
+				Expect(operationErr).ToNot(BeNil())
+				Expect(operationErr.Error()).To(ContainSubstring(core.ERRORMSG_SERVICE_URL_MISSING))
+				Expect(response).To(BeNil())
+				// Construct a second instance of the V3RemoveUserOptions model with no property values
+				v3RemoveUserOptionsModelNew := new(usermanagementv1.V3RemoveUserOptions)
+				// Invoke operation with invalid model (negative test)
+				response, operationErr = userManagementService.V3RemoveUser(v3RemoveUserOptionsModelNew)
+				Expect(operationErr).ToNot(BeNil())
+				Expect(response).To(BeNil())
+			})
+			AfterEach(func() {
+				testServer.Close()
+			})
 		})
 	})
 	Describe(`GetUserSettings(getUserSettingsOptions *GetUserSettingsOptions) - Operation response error`, func() {
 		getUserSettingsPath := "/v2/accounts/testString/users/testString/settings"
-		Context(`Using mock server endpoint`, func() {
+		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 					defer GinkgoRecover()
@@ -1172,7 +1458,7 @@ var _ = Describe(`UserManagementV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
-					fmt.Fprintf(res, `} this is not valid json {`)
+					fmt.Fprint(res, `} this is not valid json {`)
 				}))
 			})
 			It(`Invoke GetUserSettings with error: Operation response processing error`, func() {
@@ -1206,7 +1492,6 @@ var _ = Describe(`UserManagementV1`, func() {
 			})
 		})
 	})
-
 	Describe(`GetUserSettings(getUserSettingsOptions *GetUserSettingsOptions)`, func() {
 		getUserSettingsPath := "/v2/accounts/testString/users/testString/settings"
 		Context(`Using mock server endpoint with timeout`, func() {
@@ -1342,8 +1627,42 @@ var _ = Describe(`UserManagementV1`, func() {
 				testServer.Close()
 			})
 		})
-	})
+		Context(`Using mock server endpoint with missing response body`, func() {
+			BeforeEach(func() {
+				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					defer GinkgoRecover()
 
+					// Set success status code with no respoonse body
+					res.WriteHeader(200)
+				}))
+			})
+			It(`Invoke GetUserSettings successfully`, func() {
+				userManagementService, serviceErr := usermanagementv1.NewUserManagementV1(&usermanagementv1.UserManagementV1Options{
+					URL:           testServer.URL,
+					Authenticator: &core.NoAuthAuthenticator{},
+				})
+				Expect(serviceErr).To(BeNil())
+				Expect(userManagementService).ToNot(BeNil())
+
+				// Construct an instance of the GetUserSettingsOptions model
+				getUserSettingsOptionsModel := new(usermanagementv1.GetUserSettingsOptions)
+				getUserSettingsOptionsModel.AccountID = core.StringPtr("testString")
+				getUserSettingsOptionsModel.IamID = core.StringPtr("testString")
+				getUserSettingsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
+
+				// Invoke operation
+				result, response, operationErr := userManagementService.GetUserSettings(getUserSettingsOptionsModel)
+				Expect(operationErr).To(BeNil())
+				Expect(response).ToNot(BeNil())
+
+				// Verify a nil result
+				Expect(result).To(BeNil())
+			})
+			AfterEach(func() {
+				testServer.Close()
+			})
+		})
+	})
 	Describe(`UpdateUserSettings(updateUserSettingsOptions *UpdateUserSettingsOptions)`, func() {
 		updateUserSettingsPath := "/v2/accounts/testString/users/testString/settings"
 		Context(`Using mock server endpoint`, func() {
@@ -1444,6 +1763,15 @@ var _ = Describe(`UserManagementV1`, func() {
 				URL:           "http://usermanagementv1modelgenerator.com",
 				Authenticator: &core.NoAuthAuthenticator{},
 			})
+			It(`Invoke NewAcceptOptions successfully`, func() {
+				// Construct an instance of the AcceptOptions model
+				acceptOptionsModel := userManagementService.NewAcceptOptions()
+				acceptOptionsModel.SetAccountID("testString")
+				acceptOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
+				Expect(acceptOptionsModel).ToNot(BeNil())
+				Expect(acceptOptionsModel.AccountID).To(Equal(core.StringPtr("testString")))
+				Expect(acceptOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
+			})
 			It(`Invoke NewGetUserProfileOptions successfully`, func() {
 				// Construct an instance of the GetUserProfileOptions model
 				accountID := "testString"
@@ -1451,10 +1779,12 @@ var _ = Describe(`UserManagementV1`, func() {
 				getUserProfileOptionsModel := userManagementService.NewGetUserProfileOptions(accountID, iamID)
 				getUserProfileOptionsModel.SetAccountID("testString")
 				getUserProfileOptionsModel.SetIamID("testString")
+				getUserProfileOptionsModel.SetIncludeActivity("testString")
 				getUserProfileOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getUserProfileOptionsModel).ToNot(BeNil())
 				Expect(getUserProfileOptionsModel.AccountID).To(Equal(core.StringPtr("testString")))
 				Expect(getUserProfileOptionsModel.IamID).To(Equal(core.StringPtr("testString")))
+				Expect(getUserProfileOptionsModel.IncludeActivity).To(Equal(core.StringPtr("testString")))
 				Expect(getUserProfileOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetUserSettingsOptions successfully`, func() {
@@ -1529,15 +1859,19 @@ var _ = Describe(`UserManagementV1`, func() {
 				accountID := "testString"
 				listUsersOptionsModel := userManagementService.NewListUsersOptions(accountID)
 				listUsersOptionsModel.SetAccountID("testString")
-				listUsersOptionsModel.SetState("testString")
-				listUsersOptionsModel.SetLimit(int64(100))
+				listUsersOptionsModel.SetLimit(int64(10))
+				listUsersOptionsModel.SetIncludeSettings(true)
+				listUsersOptionsModel.SetSearch("testString")
 				listUsersOptionsModel.SetStart("testString")
+				listUsersOptionsModel.SetUserID("testString")
 				listUsersOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(listUsersOptionsModel).ToNot(BeNil())
 				Expect(listUsersOptionsModel.AccountID).To(Equal(core.StringPtr("testString")))
-				Expect(listUsersOptionsModel.State).To(Equal(core.StringPtr("testString")))
-				Expect(listUsersOptionsModel.Limit).To(Equal(core.Int64Ptr(int64(100))))
+				Expect(listUsersOptionsModel.Limit).To(Equal(core.Int64Ptr(int64(10))))
+				Expect(listUsersOptionsModel.IncludeSettings).To(Equal(core.BoolPtr(true)))
+				Expect(listUsersOptionsModel.Search).To(Equal(core.StringPtr("testString")))
 				Expect(listUsersOptionsModel.Start).To(Equal(core.StringPtr("testString")))
+				Expect(listUsersOptionsModel.UserID).To(Equal(core.StringPtr("testString")))
 				Expect(listUsersOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewRemoveUserOptions successfully`, func() {
@@ -1547,10 +1881,12 @@ var _ = Describe(`UserManagementV1`, func() {
 				removeUserOptionsModel := userManagementService.NewRemoveUserOptions(accountID, iamID)
 				removeUserOptionsModel.SetAccountID("testString")
 				removeUserOptionsModel.SetIamID("testString")
+				removeUserOptionsModel.SetIncludeActivity("testString")
 				removeUserOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(removeUserOptionsModel).ToNot(BeNil())
 				Expect(removeUserOptionsModel.AccountID).To(Equal(core.StringPtr("testString")))
 				Expect(removeUserOptionsModel.IamID).To(Equal(core.StringPtr("testString")))
+				Expect(removeUserOptionsModel.IncludeActivity).To(Equal(core.StringPtr("testString")))
 				Expect(removeUserOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewUpdateUserProfileOptions successfully`, func() {
@@ -1567,6 +1903,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				updateUserProfileOptionsModel.SetPhonenumber("testString")
 				updateUserProfileOptionsModel.SetAltphonenumber("testString")
 				updateUserProfileOptionsModel.SetPhoto("testString")
+				updateUserProfileOptionsModel.SetIncludeActivity("testString")
 				updateUserProfileOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(updateUserProfileOptionsModel).ToNot(BeNil())
 				Expect(updateUserProfileOptionsModel.AccountID).To(Equal(core.StringPtr("testString")))
@@ -1578,6 +1915,7 @@ var _ = Describe(`UserManagementV1`, func() {
 				Expect(updateUserProfileOptionsModel.Phonenumber).To(Equal(core.StringPtr("testString")))
 				Expect(updateUserProfileOptionsModel.Altphonenumber).To(Equal(core.StringPtr("testString")))
 				Expect(updateUserProfileOptionsModel.Photo).To(Equal(core.StringPtr("testString")))
+				Expect(updateUserProfileOptionsModel.IncludeActivity).To(Equal(core.StringPtr("testString")))
 				Expect(updateUserProfileOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewUpdateUserSettingsOptions successfully`, func() {
@@ -1601,10 +1939,23 @@ var _ = Describe(`UserManagementV1`, func() {
 				Expect(updateUserSettingsOptionsModel.SelfManage).To(Equal(core.BoolPtr(true)))
 				Expect(updateUserSettingsOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
+			It(`Invoke NewV3RemoveUserOptions successfully`, func() {
+				// Construct an instance of the V3RemoveUserOptions model
+				accountID := "testString"
+				iamID := "testString"
+				v3RemoveUserOptionsModel := userManagementService.NewV3RemoveUserOptions(accountID, iamID)
+				v3RemoveUserOptionsModel.SetAccountID("testString")
+				v3RemoveUserOptionsModel.SetIamID("testString")
+				v3RemoveUserOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
+				Expect(v3RemoveUserOptionsModel).ToNot(BeNil())
+				Expect(v3RemoveUserOptionsModel.AccountID).To(Equal(core.StringPtr("testString")))
+				Expect(v3RemoveUserOptionsModel.IamID).To(Equal(core.StringPtr("testString")))
+				Expect(v3RemoveUserOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
+			})
 			It(`Invoke NewInviteUserIamPolicy successfully`, func() {
 				typeVar := "testString"
-				model, err := userManagementService.NewInviteUserIamPolicy(typeVar)
-				Expect(model).ToNot(BeNil())
+				_model, err := userManagementService.NewInviteUserIamPolicy(typeVar)
+				Expect(_model).ToNot(BeNil())
 				Expect(err).To(BeNil())
 			})
 		})
@@ -1623,11 +1974,11 @@ var _ = Describe(`UserManagementV1`, func() {
 			Expect(mockReader).ToNot(BeNil())
 		})
 		It(`Invoke CreateMockDate() successfully`, func() {
-			mockDate := CreateMockDate()
+			mockDate := CreateMockDate("2019-01-01")
 			Expect(mockDate).ToNot(BeNil())
 		})
 		It(`Invoke CreateMockDateTime() successfully`, func() {
-			mockDateTime := CreateMockDateTime()
+			mockDateTime := CreateMockDateTime("2019-01-01T12:00:00.000Z")
 			Expect(mockDateTime).ToNot(BeNil())
 		})
 	})
@@ -1649,16 +2000,22 @@ func CreateMockUUID(mockData string) *strfmt.UUID {
 }
 
 func CreateMockReader(mockData string) io.ReadCloser {
-	return ioutil.NopCloser(bytes.NewReader([]byte(mockData)))
+	return io.NopCloser(bytes.NewReader([]byte(mockData)))
 }
 
-func CreateMockDate() *strfmt.Date {
-	d := strfmt.Date(time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC))
+func CreateMockDate(mockData string) *strfmt.Date {
+	d, err := core.ParseDate(mockData)
+	if err != nil {
+		return nil
+	}
 	return &d
 }
 
-func CreateMockDateTime() *strfmt.DateTime {
-	d := strfmt.DateTime(time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC))
+func CreateMockDateTime(mockData string) *strfmt.DateTime {
+	d, err := core.ParseDateTime(mockData)
+	if err != nil {
+		return nil
+	}
 	return &d
 }
 

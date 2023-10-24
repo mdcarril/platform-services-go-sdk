@@ -1,7 +1,8 @@
+//go:build examples
 // +build examples
 
 /**
- * (C) Copyright IBM Corp. 2020, 2021.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,24 +46,25 @@ import (
 // in a configuration file and then:
 // export IBM_CREDENTIALS_FILE=<name of configuration file>
 //
-const externalConfigFile = "../enterprise_billing_units.env"
-
-var (
-	enterpriseBillingUnitsService *enterprisebillingunitsv1.EnterpriseBillingUnitsV1
-	config                        map[string]string
-	configLoaded                  bool = false
-
-	enterpriseID  string
-	billingUnitID string
-)
-
-func shouldSkipTest() {
-	if !configLoaded {
-		Skip("External configuration is not available, skipping tests...")
-	}
-}
 
 var _ = Describe(`EnterpriseBillingUnitsV1 Examples Tests`, func() {
+	const externalConfigFile = "../enterprise_billing_units.env"
+
+	var (
+		enterpriseBillingUnitsService *enterprisebillingunitsv1.EnterpriseBillingUnitsV1
+		config                        map[string]string
+		configLoaded                  bool = false
+
+		enterpriseID  string
+		billingUnitID string
+	)
+
+	var shouldSkipTest = func() {
+		if !configLoaded {
+			Skip("External configuration is not available, skipping tests...")
+		}
+	}
+
 	Describe(`External configuration`, func() {
 		It("Successfully load the configuration", func() {
 			var err error
@@ -143,18 +145,26 @@ var _ = Describe(`EnterpriseBillingUnitsV1 Examples Tests`, func() {
 			listBillingUnitsOptions := enterpriseBillingUnitsService.NewListBillingUnitsOptions()
 			listBillingUnitsOptions.SetEnterpriseID(enterpriseID)
 
-			billingUnitsList, response, err := enterpriseBillingUnitsService.ListBillingUnits(listBillingUnitsOptions)
+			pager, err := enterpriseBillingUnitsService.NewBillingUnitsPager(listBillingUnitsOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(billingUnitsList, "", "  ")
+
+			var allResults []enterprisebillingunitsv1.BillingUnit
+			for pager.HasNext() {
+				nextPage, err := pager.GetNext()
+				if err != nil {
+					panic(err)
+				}
+				allResults = append(allResults, nextPage...)
+			}
+			b, _ := json.MarshalIndent(allResults, "", "  ")
 			fmt.Println(string(b))
 
 			// end-list_billing_units
 
 			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(billingUnitsList).ToNot(BeNil())
+			Expect(allResults).ToNot(BeNil())
 
 		})
 		It(`ListBillingOptions request example`, func() {
@@ -165,18 +175,26 @@ var _ = Describe(`EnterpriseBillingUnitsV1 Examples Tests`, func() {
 				billingUnitID,
 			)
 
-			billingOption, response, err := enterpriseBillingUnitsService.ListBillingOptions(listBillingOptionsOptions)
+			pager, err := enterpriseBillingUnitsService.NewBillingOptionsPager(listBillingOptionsOptions)
 			if err != nil {
 				panic(err)
 			}
-			b, _ := json.MarshalIndent(billingOption, "", "  ")
+
+			var allResults []enterprisebillingunitsv1.BillingOption
+			for pager.HasNext() {
+				nextPage, err := pager.GetNext()
+				if err != nil {
+					panic(err)
+				}
+				allResults = append(allResults, nextPage...)
+			}
+			b, _ := json.MarshalIndent(allResults, "", "  ")
 			fmt.Println(string(b))
 
 			// end-list_billing_options
 
 			Expect(err).To(BeNil())
-			Expect(response.StatusCode).To(Equal(200))
-			Expect(billingOption).ToNot(BeNil())
+			Expect(allResults).ToNot(BeNil())
 
 		})
 		It(`GetCreditPools request example`, func() {

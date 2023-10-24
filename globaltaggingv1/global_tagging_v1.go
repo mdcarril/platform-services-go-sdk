@@ -1,5 +1,5 @@
 /**
- * (C) Copyright IBM Corp. 2021.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.33.0-caf29bd0-20210603-225214
+ * IBM OpenAPI SDK Code Generator Version: 3.79.0-2eb6af3d-20230905-174838
  */
 
 // Package globaltaggingv1 : Operations and models for the GlobalTaggingV1 service
@@ -34,14 +34,14 @@ import (
 	common "github.com/IBM/platform-services-go-sdk/common"
 )
 
-// GlobalTaggingV1 : Manage your tags with the Tagging API in IBM Cloud. You can attach, detach, delete a tag or list
-// all tags in your billing account with the Tagging API. The tag name must be unique within a billing account. You can
+// GlobalTaggingV1 : Manage your tags with the Tagging API in IBM Cloud. You can attach, detach, delete, or list all of
+// the tags in your billing account with the Tagging API. The tag name must be unique within a billing account. You can
 // create tags in two formats: `key:value` or `label`. The tagging API supports three types of tag: `user` `service`,
 // and `access` tags. `service` tags cannot be attached to IMS resources. `service` tags must be in the form
 // `service_prefix:tag_label` where `service_prefix` identifies the Service owning the tag. `access` tags cannot be
 // attached to IMS and Cloud Foundry resources. They must be in the form `key:value`.
 //
-// Version: 1.2.0
+// API Version: 1.2.0
 type GlobalTaggingV1 struct {
 	Service *core.BaseService
 }
@@ -166,8 +166,8 @@ func (globalTagging *GlobalTaggingV1) DisableRetries() {
 }
 
 // ListTags : Get all tags
-// Lists all tags in a billing account. Use the `attached_to` parameter to return the list of tags attached to the
-// specified resource.
+// Lists all tags that are in a billing account. Use the `attached_to` parameter to return the list of tags that are
+// attached to the specified resource.
 func (globalTagging *GlobalTaggingV1) ListTags(listTagsOptions *ListTagsOptions) (result *TagList, response *core.DetailedResponse, err error) {
 	return globalTagging.ListTagsWithContext(context.Background(), listTagsOptions)
 }
@@ -196,6 +196,15 @@ func (globalTagging *GlobalTaggingV1) ListTagsWithContext(ctx context.Context, l
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
+	if listTagsOptions.XRequestID != nil {
+		builder.AddHeader("x-request-id", fmt.Sprint(*listTagsOptions.XRequestID))
+	}
+	if listTagsOptions.XCorrelationID != nil {
+		builder.AddHeader("x-correlation-id", fmt.Sprint(*listTagsOptions.XCorrelationID))
+	}
+	if listTagsOptions.TransactionID != nil {
+		builder.AddHeader("transaction-id", fmt.Sprint(*listTagsOptions.TransactionID))
+	}
 
 	if listTagsOptions.ImpersonateUser != nil {
 		builder.AddQuery("impersonate_user", fmt.Sprint(*listTagsOptions.ImpersonateUser))
@@ -252,10 +261,10 @@ func (globalTagging *GlobalTaggingV1) ListTagsWithContext(ctx context.Context, l
 	return
 }
 
-// CreateTag : Create an access tag
-// Create an access tag. To create an `access` tag, you must have the access listed in the [Granting users access to tag
-// resources](https://cloud.ibm.com/docs/account?topic=account-access) documentation. `service` and `user` tags cannot
-// be created upfront. They are created when they are attached for the first time to a resource.
+// CreateTag : Create an access management tag
+// Create an access management tag. To create an `access` tag, you must have the access listed in the [Granting users
+// access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) documentation. `service` and `user`
+// tags cannot be created upfront. They are created when they are attached for the first time to a resource.
 func (globalTagging *GlobalTaggingV1) CreateTag(createTagOptions *CreateTagOptions) (result *CreateTagResults, response *core.DetailedResponse, err error) {
 	return globalTagging.CreateTagWithContext(context.Background(), createTagOptions)
 }
@@ -289,6 +298,15 @@ func (globalTagging *GlobalTaggingV1) CreateTagWithContext(ctx context.Context, 
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
+	if createTagOptions.XRequestID != nil {
+		builder.AddHeader("x-request-id", fmt.Sprint(*createTagOptions.XRequestID))
+	}
+	if createTagOptions.XCorrelationID != nil {
+		builder.AddHeader("x-correlation-id", fmt.Sprint(*createTagOptions.XCorrelationID))
+	}
+	if createTagOptions.TransactionID != nil {
+		builder.AddHeader("transaction-id", fmt.Sprint(*createTagOptions.TransactionID))
+	}
 
 	if createTagOptions.ImpersonateUser != nil {
 		builder.AddQuery("impersonate_user", fmt.Sprint(*createTagOptions.ImpersonateUser))
@@ -360,6 +378,15 @@ func (globalTagging *GlobalTaggingV1) DeleteTagAllWithContext(ctx context.Contex
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
+	if deleteTagAllOptions.XRequestID != nil {
+		builder.AddHeader("x-request-id", fmt.Sprint(*deleteTagAllOptions.XRequestID))
+	}
+	if deleteTagAllOptions.XCorrelationID != nil {
+		builder.AddHeader("x-correlation-id", fmt.Sprint(*deleteTagAllOptions.XCorrelationID))
+	}
+	if deleteTagAllOptions.TransactionID != nil {
+		builder.AddHeader("transaction-id", fmt.Sprint(*deleteTagAllOptions.TransactionID))
+	}
 
 	if deleteTagAllOptions.Providers != nil {
 		builder.AddQuery("providers", fmt.Sprint(*deleteTagAllOptions.Providers))
@@ -433,6 +460,15 @@ func (globalTagging *GlobalTaggingV1) DeleteTagWithContext(ctx context.Context, 
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
+	if deleteTagOptions.XRequestID != nil {
+		builder.AddHeader("x-request-id", fmt.Sprint(*deleteTagOptions.XRequestID))
+	}
+	if deleteTagOptions.XCorrelationID != nil {
+		builder.AddHeader("x-correlation-id", fmt.Sprint(*deleteTagOptions.XCorrelationID))
+	}
+	if deleteTagOptions.TransactionID != nil {
+		builder.AddHeader("transaction-id", fmt.Sprint(*deleteTagOptions.TransactionID))
+	}
 
 	if deleteTagOptions.Providers != nil {
 		builder.AddQuery("providers", strings.Join(deleteTagOptions.Providers, ","))
@@ -469,7 +505,8 @@ func (globalTagging *GlobalTaggingV1) DeleteTagWithContext(ctx context.Context, 
 }
 
 // AttachTag : Attach tags
-// Attaches one or more tags to one or more resources.
+// Attaches one or more tags to one or more resources. Each resource can have no more than 1000 tags per each 'user' and
+// 'service' type, and no more than 250 'access' tags (which is the account limit).
 func (globalTagging *GlobalTaggingV1) AttachTag(attachTagOptions *AttachTagOptions) (result *TagResults, response *core.DetailedResponse, err error) {
 	return globalTagging.AttachTagWithContext(context.Background(), attachTagOptions)
 }
@@ -503,6 +540,15 @@ func (globalTagging *GlobalTaggingV1) AttachTagWithContext(ctx context.Context, 
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
+	if attachTagOptions.XRequestID != nil {
+		builder.AddHeader("x-request-id", fmt.Sprint(*attachTagOptions.XRequestID))
+	}
+	if attachTagOptions.XCorrelationID != nil {
+		builder.AddHeader("x-correlation-id", fmt.Sprint(*attachTagOptions.XCorrelationID))
+	}
+	if attachTagOptions.TransactionID != nil {
+		builder.AddHeader("transaction-id", fmt.Sprint(*attachTagOptions.TransactionID))
+	}
 
 	if attachTagOptions.ImpersonateUser != nil {
 		builder.AddQuery("impersonate_user", fmt.Sprint(*attachTagOptions.ImpersonateUser))
@@ -585,6 +631,15 @@ func (globalTagging *GlobalTaggingV1) DetachTagWithContext(ctx context.Context, 
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
+	if detachTagOptions.XRequestID != nil {
+		builder.AddHeader("x-request-id", fmt.Sprint(*detachTagOptions.XRequestID))
+	}
+	if detachTagOptions.XCorrelationID != nil {
+		builder.AddHeader("x-correlation-id", fmt.Sprint(*detachTagOptions.XCorrelationID))
+	}
+	if detachTagOptions.TransactionID != nil {
+		builder.AddHeader("transaction-id", fmt.Sprint(*detachTagOptions.TransactionID))
+	}
 
 	if detachTagOptions.ImpersonateUser != nil {
 		builder.AddQuery("impersonate_user", fmt.Sprint(*detachTagOptions.ImpersonateUser))
@@ -634,25 +689,45 @@ func (globalTagging *GlobalTaggingV1) DetachTagWithContext(ctx context.Context, 
 
 // AttachTagOptions : The AttachTag options.
 type AttachTagOptions struct {
-	// List of resources on which the tag or tags should be attached.
-	Resources []Resource `validate:"required"`
+	// List of resources on which the tag or tags are attached.
+	Resources []Resource `json:"resources" validate:"required"`
 
 	// The name of the tag to attach.
-	TagName *string
+	TagName *string `json:"tag_name,omitempty"`
 
 	// An array of tag names to attach.
-	TagNames []string
+	TagNames []string `json:"tag_names,omitempty"`
+
+	// An alphanumeric string that is used to trace the request. The value  may include ASCII alphanumerics and any of
+	// following segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024
+	// bytes. The value is considered invalid and must be ignored if that value includes any other character or is longer
+	// than 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XRequestID *string `json:"x-request-id,omitempty"`
+
+	// An alphanumeric string that is used to trace the request as a part of a larger context: the same value is used for
+	// downstream requests and retries of those requests. The value may include ASCII alphanumerics and any of following
+	// segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024 bytes.
+	// The value is considered invalid and must be ignored if that value includes any other character or is longer than
+	// 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XCorrelationID *string `json:"x-correlation-id,omitempty"`
+
+	// An alphanumeric string that can be used to trace a request across services. If not specified, it automatically
+	// generated with the prefix "gst-".
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	TransactionID *string `json:"transaction-id,omitempty"`
 
 	// The user on whose behalf the attach operation must be performed (_for administrators only_).
-	ImpersonateUser *string
+	ImpersonateUser *string `json:"impersonate_user,omitempty"`
 
-	// The ID of the billing account where the resources to be tagged lives. It is a required parameter if `tag_type` is
-	// set to `service`. Otherwise, it is inferred from the authorization IAM token.
-	AccountID *string
+	// The ID of the billing account of the tagged resource. It is a required parameter if `tag_type` is set to `service`.
+	// Otherwise, it is inferred from the authorization IAM token.
+	AccountID *string `json:"account_id,omitempty"`
 
 	// The type of the tag. Supported values are `user`, `service` and `access`. `service` and `access` are not supported
 	// for IMS resources.
-	TagType *string
+	TagType *string `json:"tag_type,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -692,6 +767,25 @@ func (_options *AttachTagOptions) SetTagNames(tagNames []string) *AttachTagOptio
 	return _options
 }
 
+// SetXRequestID : Allow user to set XRequestID
+func (_options *AttachTagOptions) SetXRequestID(xRequestID string) *AttachTagOptions {
+	_options.XRequestID = core.StringPtr(xRequestID)
+	return _options
+}
+
+// SetXCorrelationID : Allow user to set XCorrelationID
+func (_options *AttachTagOptions) SetXCorrelationID(xCorrelationID string) *AttachTagOptions {
+	_options.XCorrelationID = core.StringPtr(xCorrelationID)
+	return _options
+}
+
+// SetTransactionID : Allow user to set TransactionID
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *AttachTagOptions) SetTransactionID(transactionID string) *AttachTagOptions {
+	_options.TransactionID = core.StringPtr(transactionID)
+	return _options
+}
+
 // SetImpersonateUser : Allow user to set ImpersonateUser
 func (_options *AttachTagOptions) SetImpersonateUser(impersonateUser string) *AttachTagOptions {
 	_options.ImpersonateUser = core.StringPtr(impersonateUser)
@@ -719,17 +813,37 @@ func (options *AttachTagOptions) SetHeaders(param map[string]string) *AttachTagO
 // CreateTagOptions : The CreateTag options.
 type CreateTagOptions struct {
 	// An array of tag names to create.
-	TagNames []string `validate:"required"`
+	TagNames []string `json:"tag_names" validate:"required"`
 
 	// The user on whose behalf the create operation must be performed (_for administrators only_).
-	ImpersonateUser *string
+	ImpersonateUser *string `json:"impersonate_user,omitempty"`
+
+	// An alphanumeric string that is used to trace the request. The value  may include ASCII alphanumerics and any of
+	// following segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024
+	// bytes. The value is considered invalid and must be ignored if that value includes any other character or is longer
+	// than 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XRequestID *string `json:"x-request-id,omitempty"`
+
+	// An alphanumeric string that is used to trace the request as a part of a larger context: the same value is used for
+	// downstream requests and retries of those requests. The value may include ASCII alphanumerics and any of following
+	// segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024 bytes.
+	// The value is considered invalid and must be ignored if that value includes any other character or is longer than
+	// 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XCorrelationID *string `json:"x-correlation-id,omitempty"`
+
+	// An alphanumeric string that can be used to trace a request across services. If not specified, it automatically
+	// generated with the prefix "gst-".
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	TransactionID *string `json:"transaction-id,omitempty"`
 
 	// The ID of the billing account where the tag must be created. It is a required parameter if `impersonate_user` is
 	// set.
-	AccountID *string
+	AccountID *string `json:"account_id,omitempty"`
 
 	// The type of the tags you want to create. The only allowed value is `access`.
-	TagType *string
+	TagType *string `json:"tag_type,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -760,6 +874,25 @@ func (_options *CreateTagOptions) SetImpersonateUser(impersonateUser string) *Cr
 	return _options
 }
 
+// SetXRequestID : Allow user to set XRequestID
+func (_options *CreateTagOptions) SetXRequestID(xRequestID string) *CreateTagOptions {
+	_options.XRequestID = core.StringPtr(xRequestID)
+	return _options
+}
+
+// SetXCorrelationID : Allow user to set XCorrelationID
+func (_options *CreateTagOptions) SetXCorrelationID(xCorrelationID string) *CreateTagOptions {
+	_options.XCorrelationID = core.StringPtr(xCorrelationID)
+	return _options
+}
+
+// SetTransactionID : Allow user to set TransactionID
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *CreateTagOptions) SetTransactionID(transactionID string) *CreateTagOptions {
+	_options.TransactionID = core.StringPtr(transactionID)
+	return _options
+}
+
 // SetAccountID : Allow user to set AccountID
 func (_options *CreateTagOptions) SetAccountID(accountID string) *CreateTagOptions {
 	_options.AccountID = core.StringPtr(accountID)
@@ -780,7 +913,7 @@ func (options *CreateTagOptions) SetHeaders(param map[string]string) *CreateTagO
 
 // CreateTagResults : Results of a create tag(s) request.
 type CreateTagResults struct {
-	// Array of results of an set_tags request.
+	// Array of results of a create_tag request.
 	Results []CreateTagResultsResultsItem `json:"results,omitempty"`
 }
 
@@ -800,7 +933,7 @@ type CreateTagResultsResultsItem struct {
 	// The name of the tag created.
 	TagName *string `json:"tag_name,omitempty"`
 
-	// true if the tag was not created.
+	// true if the tag was not created (for example, the tag already exists).
 	IsError *bool `json:"is_error,omitempty"`
 }
 
@@ -821,19 +954,39 @@ func UnmarshalCreateTagResultsResultsItem(m map[string]json.RawMessage, result i
 
 // DeleteTagAllOptions : The DeleteTagAll options.
 type DeleteTagAllOptions struct {
+	// An alphanumeric string that is used to trace the request. The value  may include ASCII alphanumerics and any of
+	// following segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024
+	// bytes. The value is considered invalid and must be ignored if that value includes any other character or is longer
+	// than 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XRequestID *string `json:"x-request-id,omitempty"`
+
+	// An alphanumeric string that is used to trace the request as a part of a larger context: the same value is used for
+	// downstream requests and retries of those requests. The value may include ASCII alphanumerics and any of following
+	// segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024 bytes.
+	// The value is considered invalid and must be ignored if that value includes any other character or is longer than
+	// 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XCorrelationID *string `json:"x-correlation-id,omitempty"`
+
+	// An alphanumeric string that can be used to trace a request across services. If not specified, it automatically
+	// generated with the prefix "gst-".
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	TransactionID *string `json:"transaction-id,omitempty"`
+
 	// Select a provider. Supported values are `ghost` and `ims`.
-	Providers *string
+	Providers *string `json:"providers,omitempty"`
 
 	// The user on whose behalf the delete all operation must be performed (_for administrators only_).
-	ImpersonateUser *string
+	ImpersonateUser *string `json:"impersonate_user,omitempty"`
 
 	// The ID of the billing account to delete the tags for. If it is not set, then it is taken from the authorization
 	// token. It is a required parameter if `tag_type` is set to `service`.
-	AccountID *string
+	AccountID *string `json:"account_id,omitempty"`
 
 	// The type of the tag. Supported values are `user`, `service` and `access`. `service` and `access` are not supported
 	// for IMS resources (`providers` parameter set to `ims`).
-	TagType *string
+	TagType *string `json:"tag_type,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -858,6 +1011,25 @@ const (
 // NewDeleteTagAllOptions : Instantiate DeleteTagAllOptions
 func (*GlobalTaggingV1) NewDeleteTagAllOptions() *DeleteTagAllOptions {
 	return &DeleteTagAllOptions{}
+}
+
+// SetXRequestID : Allow user to set XRequestID
+func (_options *DeleteTagAllOptions) SetXRequestID(xRequestID string) *DeleteTagAllOptions {
+	_options.XRequestID = core.StringPtr(xRequestID)
+	return _options
+}
+
+// SetXCorrelationID : Allow user to set XCorrelationID
+func (_options *DeleteTagAllOptions) SetXCorrelationID(xCorrelationID string) *DeleteTagAllOptions {
+	_options.XCorrelationID = core.StringPtr(xCorrelationID)
+	return _options
+}
+
+// SetTransactionID : Allow user to set TransactionID
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *DeleteTagAllOptions) SetTransactionID(transactionID string) *DeleteTagAllOptions {
+	_options.TransactionID = core.StringPtr(transactionID)
+	return _options
 }
 
 // SetProviders : Allow user to set Providers
@@ -893,22 +1065,42 @@ func (options *DeleteTagAllOptions) SetHeaders(param map[string]string) *DeleteT
 // DeleteTagOptions : The DeleteTag options.
 type DeleteTagOptions struct {
 	// The name of tag to be deleted.
-	TagName *string `validate:"required,ne="`
+	TagName *string `json:"tag_name" validate:"required,ne="`
+
+	// An alphanumeric string that is used to trace the request. The value  may include ASCII alphanumerics and any of
+	// following segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024
+	// bytes. The value is considered invalid and must be ignored if that value includes any other character or is longer
+	// than 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XRequestID *string `json:"x-request-id,omitempty"`
+
+	// An alphanumeric string that is used to trace the request as a part of a larger context: the same value is used for
+	// downstream requests and retries of those requests. The value may include ASCII alphanumerics and any of following
+	// segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024 bytes.
+	// The value is considered invalid and must be ignored if that value includes any other character or is longer than
+	// 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XCorrelationID *string `json:"x-correlation-id,omitempty"`
+
+	// An alphanumeric string that can be used to trace a request across services. If not specified, it automatically
+	// generated with the prefix "gst-".
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	TransactionID *string `json:"transaction-id,omitempty"`
 
 	// Select a provider. Supported values are `ghost` and `ims`. To delete tags both in Global Search and Tagging and in
 	// IMS, use `ghost,ims`.
-	Providers []string
+	Providers []string `json:"providers,omitempty"`
 
 	// The user on whose behalf the delete operation must be performed (_for administrators only_).
-	ImpersonateUser *string
+	ImpersonateUser *string `json:"impersonate_user,omitempty"`
 
 	// The ID of the billing account to delete the tag for. It is a required parameter if `tag_type` is set to `service`,
 	// otherwise it is inferred from the authorization IAM token.
-	AccountID *string
+	AccountID *string `json:"account_id,omitempty"`
 
 	// The type of the tag. Supported values are `user`, `service` and `access`. `service` and `access` are not supported
 	// for IMS resources (`providers` parameter set to `ims`).
-	TagType *string
+	TagType *string `json:"tag_type,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -939,6 +1131,25 @@ func (*GlobalTaggingV1) NewDeleteTagOptions(tagName string) *DeleteTagOptions {
 // SetTagName : Allow user to set TagName
 func (_options *DeleteTagOptions) SetTagName(tagName string) *DeleteTagOptions {
 	_options.TagName = core.StringPtr(tagName)
+	return _options
+}
+
+// SetXRequestID : Allow user to set XRequestID
+func (_options *DeleteTagOptions) SetXRequestID(xRequestID string) *DeleteTagOptions {
+	_options.XRequestID = core.StringPtr(xRequestID)
+	return _options
+}
+
+// SetXCorrelationID : Allow user to set XCorrelationID
+func (_options *DeleteTagOptions) SetXCorrelationID(xCorrelationID string) *DeleteTagOptions {
+	_options.XCorrelationID = core.StringPtr(xCorrelationID)
+	return _options
+}
+
+// SetTransactionID : Allow user to set TransactionID
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *DeleteTagOptions) SetTransactionID(transactionID string) *DeleteTagOptions {
+	_options.TransactionID = core.StringPtr(transactionID)
 	return _options
 }
 
@@ -994,7 +1205,7 @@ type DeleteTagResultsItem struct {
 	// The provider of the tag.
 	Provider *string `json:"provider,omitempty"`
 
-	// It is `true` if the operation exits with an error.
+	// It is `true` if the operation exits with an error (for example, the tag does not exist).
 	IsError *bool `json:"is_error,omitempty"`
 
 	// Allows users to set arbitrary properties
@@ -1014,6 +1225,14 @@ func (o *DeleteTagResultsItem) SetProperty(key string, value interface{}) {
 		o.additionalProperties = make(map[string]interface{})
 	}
 	o.additionalProperties[key] = value
+}
+
+// SetProperties allows the user to set a map of arbitrary properties on an instance of DeleteTagResultsItem
+func (o *DeleteTagResultsItem) SetProperties(m map[string]interface{}) {
+	o.additionalProperties = make(map[string]interface{})
+	for k, v := range m {
+		o.additionalProperties[k] = v
+	}
 }
 
 // GetProperty allows the user to retrieve an arbitrary property from an instance of DeleteTagResultsItem
@@ -1070,7 +1289,7 @@ func UnmarshalDeleteTagResultsItem(m map[string]json.RawMessage, result interfac
 	return
 }
 
-// DeleteTagsResult : Results of a deleting unattatched tags.
+// DeleteTagsResult : Results of deleting unattatched tags.
 type DeleteTagsResult struct {
 	// The number of tags that have been deleted.
 	TotalCount *int64 `json:"total_count,omitempty"`
@@ -1127,25 +1346,45 @@ func UnmarshalDeleteTagsResultItem(m map[string]json.RawMessage, result interfac
 
 // DetachTagOptions : The DetachTag options.
 type DetachTagOptions struct {
-	// List of resources on which the tag or tags should be detached.
-	Resources []Resource `validate:"required"`
+	// List of resources on which the tag or tags are detached.
+	Resources []Resource `json:"resources" validate:"required"`
 
 	// The name of the tag to detach.
-	TagName *string
+	TagName *string `json:"tag_name,omitempty"`
 
 	// An array of tag names to detach.
-	TagNames []string
+	TagNames []string `json:"tag_names,omitempty"`
+
+	// An alphanumeric string that is used to trace the request. The value  may include ASCII alphanumerics and any of
+	// following segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024
+	// bytes. The value is considered invalid and must be ignored if that value includes any other character or is longer
+	// than 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XRequestID *string `json:"x-request-id,omitempty"`
+
+	// An alphanumeric string that is used to trace the request as a part of a larger context: the same value is used for
+	// downstream requests and retries of those requests. The value may include ASCII alphanumerics and any of following
+	// segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024 bytes.
+	// The value is considered invalid and must be ignored if that value includes any other character or is longer than
+	// 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XCorrelationID *string `json:"x-correlation-id,omitempty"`
+
+	// An alphanumeric string that can be used to trace a request across services. If not specified, it automatically
+	// generated with the prefix "gst-".
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	TransactionID *string `json:"transaction-id,omitempty"`
 
 	// The user on whose behalf the detach operation must be performed (_for administrators only_).
-	ImpersonateUser *string
+	ImpersonateUser *string `json:"impersonate_user,omitempty"`
 
-	// The ID of the billing account where the resources to be un-tagged lives. It is a required parameter if `tag_type` is
-	// set to `service`, otherwise it is inferred from the authorization IAM token.
-	AccountID *string
+	// The ID of the billing account of the untagged resource. It is a required parameter if `tag_type` is set to
+	// `service`, otherwise it is inferred from the authorization IAM token.
+	AccountID *string `json:"account_id,omitempty"`
 
 	// The type of the tag. Supported values are `user`, `service` and `access`. `service` and `access` are not supported
 	// for IMS resources.
-	TagType *string
+	TagType *string `json:"tag_type,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -1185,6 +1424,25 @@ func (_options *DetachTagOptions) SetTagNames(tagNames []string) *DetachTagOptio
 	return _options
 }
 
+// SetXRequestID : Allow user to set XRequestID
+func (_options *DetachTagOptions) SetXRequestID(xRequestID string) *DetachTagOptions {
+	_options.XRequestID = core.StringPtr(xRequestID)
+	return _options
+}
+
+// SetXCorrelationID : Allow user to set XCorrelationID
+func (_options *DetachTagOptions) SetXCorrelationID(xCorrelationID string) *DetachTagOptions {
+	_options.XCorrelationID = core.StringPtr(xCorrelationID)
+	return _options
+}
+
+// SetTransactionID : Allow user to set TransactionID
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *DetachTagOptions) SetTransactionID(transactionID string) *DetachTagOptions {
+	_options.TransactionID = core.StringPtr(transactionID)
+	return _options
+}
+
 // SetImpersonateUser : Allow user to set ImpersonateUser
 func (_options *DetachTagOptions) SetImpersonateUser(impersonateUser string) *DetachTagOptions {
 	_options.ImpersonateUser = core.StringPtr(impersonateUser)
@@ -1211,47 +1469,67 @@ func (options *DetachTagOptions) SetHeaders(param map[string]string) *DetachTagO
 
 // ListTagsOptions : The ListTags options.
 type ListTagsOptions struct {
+	// An alphanumeric string that is used to trace the request. The value  may include ASCII alphanumerics and any of
+	// following segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024
+	// bytes. The value is considered invalid and must be ignored if that value includes any other character or is longer
+	// than 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XRequestID *string `json:"x-request-id,omitempty"`
+
+	// An alphanumeric string that is used to trace the request as a part of a larger context: the same value is used for
+	// downstream requests and retries of those requests. The value may include ASCII alphanumerics and any of following
+	// segment separators: space ( ), comma (,), hyphen, (-), and underscore (_) and may have a length up to 1024 bytes.
+	// The value is considered invalid and must be ignored if that value includes any other character or is longer than
+	// 1024 bytes or is fewer than 8 characters. If not specified or invalid, it is automatically replaced by a random
+	// (version 4) UUID.
+	XCorrelationID *string `json:"x-correlation-id,omitempty"`
+
+	// An alphanumeric string that can be used to trace a request across services. If not specified, it automatically
+	// generated with the prefix "gst-".
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	TransactionID *string `json:"transaction-id,omitempty"`
+
 	// The user on whose behalf the get operation must be performed (_for administrators only_).
-	ImpersonateUser *string
+	ImpersonateUser *string `json:"impersonate_user,omitempty"`
 
 	// The ID of the billing account to list the tags for. If it is not set, then it is taken from the authorization token.
 	// This parameter is required if `tag_type` is set to `service`.
-	AccountID *string
+	AccountID *string `json:"account_id,omitempty"`
 
 	// The type of the tag you want to list. Supported values are `user`, `service` and `access`.
-	TagType *string
+	TagType *string `json:"tag_type,omitempty"`
 
 	// If set to `true`, this query returns the provider, `ghost`, `ims` or `ghost,ims`, where the tag exists and the
 	// number of attached resources.
-	FullData *bool
+	FullData *bool `json:"full_data,omitempty"`
 
 	// Select a provider. Supported values are `ghost` and `ims`. To list both Global Search and Tagging tags and
 	// infrastructure tags, use `ghost,ims`. `service` and `access` tags can only be attached to resources that are
-	// onboarded to Global Search and Tagging, so you should not set this parameter when listing them.
-	Providers []string
+	// onboarded to Global Search and Tagging, so you should not set this parameter to list them.
+	Providers []string `json:"providers,omitempty"`
 
-	// If you want to return only the list of tags attached to a specified resource, pass the ID of the resource on this
-	// parameter. For resources that are onboarded to Global Search and Tagging, the resource ID is the CRN; for IMS
-	// resources, it is the IMS ID. When using this parameter, you must specify the appropriate provider (`ims` or
+	// If you want to return only the list of tags that are attached to a specified resource, pass the ID of the resource
+	// on this parameter. For resources that are onboarded to Global Search and Tagging, the resource ID is the CRN; for
+	// IMS resources, it is the IMS ID. When using this parameter, you must specify the appropriate provider (`ims` or
 	// `ghost`).
-	AttachedTo *string
+	AttachedTo *string `json:"attached_to,omitempty"`
 
 	// The offset is the index of the item from which you want to start returning data from.
-	Offset *int64
+	Offset *int64 `json:"offset,omitempty"`
 
 	// The number of tags to return.
-	Limit *int64
+	Limit *int64 `json:"limit,omitempty"`
 
-	// The search timeout bounds the search request to be executed within the specified time value. It returns the hits
-	// accumulated until time runs out.
-	Timeout *int64
+	// The timeout in milliseconds, bounds the request to run within the specified time value. It returns the accumulated
+	// results until time runs out.
+	Timeout *int64 `json:"timeout,omitempty"`
 
 	// Order the output by tag name.
-	OrderByName *string
+	OrderByName *string `json:"order_by_name,omitempty"`
 
 	// Filter on attached tags. If `true`, it returns only tags that are attached to one or more resources. If `false`, it
 	// returns all tags.
-	AttachedOnly *bool
+	AttachedOnly *bool `json:"attached_only,omitempty"`
 
 	// Allows users to set headers on API requests
 	Headers map[string]string
@@ -1281,6 +1559,25 @@ const (
 // NewListTagsOptions : Instantiate ListTagsOptions
 func (*GlobalTaggingV1) NewListTagsOptions() *ListTagsOptions {
 	return &ListTagsOptions{}
+}
+
+// SetXRequestID : Allow user to set XRequestID
+func (_options *ListTagsOptions) SetXRequestID(xRequestID string) *ListTagsOptions {
+	_options.XRequestID = core.StringPtr(xRequestID)
+	return _options
+}
+
+// SetXCorrelationID : Allow user to set XCorrelationID
+func (_options *ListTagsOptions) SetXCorrelationID(xCorrelationID string) *ListTagsOptions {
+	_options.XCorrelationID = core.StringPtr(xCorrelationID)
+	return _options
+}
+
+// SetTransactionID : Allow user to set TransactionID
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *ListTagsOptions) SetTransactionID(transactionID string) *ListTagsOptions {
+	_options.TransactionID = core.StringPtr(transactionID)
+	return _options
 }
 
 // SetImpersonateUser : Allow user to set ImpersonateUser
@@ -1355,7 +1652,7 @@ func (options *ListTagsOptions) SetHeaders(param map[string]string) *ListTagsOpt
 	return options
 }
 
-// Resource : A resource that may have attached tags.
+// Resource : A resource that might have tags that are attached.
 type Resource struct {
 	// The CRN or IMS ID of the resource.
 	ResourceID *string `json:"resource_id" validate:"required"`
@@ -1390,7 +1687,7 @@ func UnmarshalResource(m map[string]json.RawMessage, result interface{}) (err er
 
 // Tag : A tag.
 type Tag struct {
-	// This is the name of the tag.
+	// The name of the tag.
 	Name *string `json:"name" validate:"required"`
 }
 
@@ -1407,7 +1704,7 @@ func UnmarshalTag(m map[string]json.RawMessage, result interface{}) (err error) 
 
 // TagList : A list of tags.
 type TagList struct {
-	// Set the occurrencies of the total tags associated to this account.
+	// Set the occurrences of the total tags that are associated with this account.
 	TotalCount *int64 `json:"total_count,omitempty"`
 
 	// The offset at which tags are returned.
